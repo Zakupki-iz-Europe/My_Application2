@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,8 +21,15 @@ public class MainActivity extends AppCompatActivity {
 
     private final static String FILE_NAME = "content.txt";
 
+    RadioButton rbZN, rbZNPP;
+    EditText et_zakaz_naryad;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
+        rbZN = findViewById(R.id.radioButton);
+        rbZNPP = findViewById(R.id.radioButton2);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
@@ -32,8 +40,11 @@ public class MainActivity extends AppCompatActivity {
 
         FileOutputStream fos = null;
         try {
-            EditText textBox = (EditText) findViewById(R.id.zakaz_naryad);
-            String text = textBox.getText().toString() + ' ';
+            EditText textBox;
+            String text = et_zakaz_naryad.getText().toString() + ' ';
+            if (rbZN.isChecked())
+                text = rbZN.getText().toString() + text;
+            else text = rbZNPP.getText().toString() + text;
 
             textBox = (EditText) findViewById(R.id.normochasy);
             text = text + textBox.getText().toString() + ' ';

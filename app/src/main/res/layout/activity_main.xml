@@ -10,15 +10,45 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/zakaz_naryad"
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:layout_weight="2"
-            android:gravity="start"
-            android:hint="Номер заказ-наряда"
-            android:inputType="numberDecimal" />
+            android:layout_weight="3"
+            android:orientation="horizontal">
+            <RadioGroup
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent" >
+
+                <RadioButton
+
+                    android:id="@+id/radioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="ЗН-36" />
+
+                <RadioButton
+                    android:id="@+id/radioButton2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="ЗНППП-16" />
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/zakaz_naryad"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="4"
+                android:gravity="start"
+                android:hint="Номер заказ-наряда"
+                android:inputType="numberDecimal" />
+
+
+        </LinearLayout>
 
         <EditText
             android:id="@+id/normochasy"
@@ -55,28 +85,29 @@
             android:layout_height="0dp"
             android:gravity="start"
             android:layout_weight="6"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_weight="3"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/open_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_weight="1"
-            android:onClick="openText"
-            android:text="Открыть" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="3"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/open_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_weight="1"
+                android:onClick="openText"
+                android:text="Открыть" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_weight="1"
-            android:onClick="clearText"
-            android:text="Обнулить" />
-    </LinearLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_weight="1"
+                android:onClick="clearText"
+                android:text="Обнулить" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
