@@ -2,14 +2,17 @@ package com.example.myapplication2;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -20,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -38,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 et_data;
     TextView tv_open_text;
     String Value;
+    TextView currentDateTime;
+    Calendar dateAndTime=Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
         et_normo_chasy = findViewById(R.id.normochasy);
         et_data = findViewById(R.id.data);
-
+        currentDateTime = findViewById(R.id.currentDateTime);
         clearField();
 
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
@@ -86,9 +92,9 @@ public class MainActivity extends AppCompatActivity {
 
     // сохранение файла
     public void saveText(View view) {
-        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
-        et_normo_chasy = findViewById(R.id.normochasy);
-        et_data = findViewById(R.id.data);
+//        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
+//        et_normo_chasy = findViewById(R.id.normochasy);
+//        et_data = findViewById(R.id.data);
         rbZN = findViewById(R.id.radioButton);
         rbZNPP = findViewById(R.id.radioButton2);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -204,32 +210,50 @@ public class MainActivity extends AppCompatActivity {
 
         String text = et_zakaz_naryad.getText().toString();
         if (text.length() != len_zakaz_naryad) {
-            et_zakaz_naryad.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
-            Toast.makeText(this, " Введи номер заказ-наряда - 5 цифр", Toast.LENGTH_SHORT).show();
+            focus_keyboard(et_zakaz_naryad," Введи номер заказ-наряда - 5 цифр");
             return FALSE;
          }
 
         text = et_normo_chasy.getText().toString();
         if (text.length() < 2) {
-            et_normo_chasy.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
-            Toast.makeText(this, " Введи часы за работу, помноженные на 100, т.е. 0.5 н/ч = 50", Toast.LENGTH_SHORT).show();
+            focus_keyboard(et_normo_chasy,"Введи часы за работу, помноженные на 100, т.е. 0.5 н/ч = 50");
             return FALSE;
         }
 
         text = et_data.getText().toString();
         if (text.length() < 2) {
-            et_data.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
-            Toast.makeText(this, " Введи число", Toast.LENGTH_SHORT).show();
+            focus_keyboard(et_data,"Введи число");
             return FALSE;
         }
 
     return TRUE;
     }
 
+    public void focus_keyboard(EditText editText, String str){
+       editText.requestFocus();
+       InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+       imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+       Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+
+    // отображаем диалоговое окно для выбора даты
+    public void setDate(View v) {
+        new DatePickerDialog(MainActivity.this, d,
+                dateAndTime.get(Calendar.YEAR),
+                dateAndTime.get(Calendar.MONTH),
+                dateAndTime.get(Calendar.DAY_OF_MONTH))
+                .show();
+    }
+    // установка обработчика выбора даты
+    DatePickerDialog.OnDateSetListener d=new DatePickerDialog.OnDateSetListener() {
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            dateAndTime.set(Calendar.YEAR, year);
+            dateAndTime.set(Calendar.MONTH, monthOfYear);
+            dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            currentDateTime.setText(DateUtils.formatDateTime( MainActivity.this,dateAndTime.getTimeInMillis(),
+                    DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR
+                            | DateUtils.FORMAT_SHOW_TIME));
+        }
+    };
 }

@@ -73,6 +73,13 @@
                 android:onClick="saveText"
                 android:text="Сохранить"/>
             <TextView
+                android:id="@+id/currentDateTime"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:onClick="setDate"/>
+            <TextView
                 android:id="@+id/open_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
