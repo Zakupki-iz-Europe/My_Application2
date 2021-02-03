@@ -28,10 +28,6 @@ android {
     }
 }
 
-realm {
-    syncEnabled = true
-}
-
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
