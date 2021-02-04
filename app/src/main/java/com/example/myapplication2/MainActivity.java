@@ -9,7 +9,6 @@ import android.os.Bundle;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateUtils;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
@@ -18,8 +17,12 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,23 +41,25 @@ public class MainActivity extends AppCompatActivity {
 
     RadioButton rbZN, rbZNPP;
     EditText    et_zakaz_naryad,
-                et_normo_chasy,
-                et_data;
-    TextView tv_open_text;
+                et_normo_chasy;
+    TextView tv_open_text,
+            et_data;
     String Value;
-    TextView currentDateTime;
+
     Calendar dateAndTime=Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        getSupportActionBar().setTitle("Нормочасы"); //R.string.app_name);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
         et_normo_chasy = findViewById(R.id.normochasy);
-        et_data = findViewById(R.id.data);
-        currentDateTime = findViewById(R.id.currentDateTime);
+        et_data = findViewById(R.id.currentDateTime);
+        rbZN = findViewById(R.id.radioButton);
+        rbZNPP = findViewById(R.id.radioButton2);
+
         clearField();
 
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
@@ -65,11 +70,11 @@ public class MainActivity extends AppCompatActivity {
 
                 Value = et_zakaz_naryad.getText().toString();
 
-               if (Value.length() == len_zakaz_naryad) {
-                   et_zakaz_naryad.setTextColor(Color.BLUE);
-                   et_normo_chasy.requestFocus();}
-               else et_zakaz_naryad.setTextColor(Color.RED);
-
+               if (Value.length() < len_zakaz_naryad + 1) et_zakaz_naryad.setTextColor(Color.RED);
+               else {
+                    et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
+                    et_zakaz_naryad.setTextColor(Color.WHITE);
+                    et_normo_chasy.requestFocus();}
             }
 
             @Override
@@ -92,11 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     // сохранение файла
     public void saveText(View view) {
-//        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
-//        et_normo_chasy = findViewById(R.id.normochasy);
-//        et_data = findViewById(R.id.data);
-        rbZN = findViewById(R.id.radioButton);
-        rbZNPP = findViewById(R.id.radioButton2);
+        // Убираю клавиатуру
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(),0);
 
@@ -110,8 +111,13 @@ public class MainActivity extends AppCompatActivity {
                     text = text + rbZN.getText().toString();
                else text = text + rbZNPP.getText().toString();
 
-               text = text + et_zakaz_naryad.getText().toString() + " "
-                        + et_normo_chasy.getText().toString() + "н/ч\r\n";
+               text = text + et_zakaz_naryad.getText().toString() + " ";
+               int int_chasy = 0;
+               String chasy = et_normo_chasy.getText().toString();
+               String[] summa_chasov = chasy.split("\\D"); // делю строку любыми символами кроме цифр
+               for (int i=0; i<summa_chasov.length; i++){int_chasy += Integer.parseInt(summa_chasov[i]);};
+
+               text = text + Double.toString(int_chasy/100) + "н/ч\r\n";
 
                clearField();
 
@@ -122,10 +128,8 @@ public class MainActivity extends AppCompatActivity {
 
                 Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
             } finally {
-                try {
-                    if (fos != null)
-                        fos.close();
-                } catch (IOException ex) {
+                try {fos.close();}
+                 catch (IOException ex) {
 
                     Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -174,9 +178,10 @@ public class MainActivity extends AppCompatActivity {
             clearField();
         } finally{
 
-            try{
-                if(fin!=null)
+            try {
+                if (fin != null) {
                     fin.close();
+                }
             }
             catch(IOException ex){
 
@@ -186,31 +191,26 @@ public class MainActivity extends AppCompatActivity {
     }
     // очистка полей ввода
     public void clearField() {
-        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
-        et_normo_chasy = findViewById(R.id.normochasy);
-        et_data = findViewById(R.id.data);
-
         et_zakaz_naryad.setText("");
         et_normo_chasy.setText("");
-
-        // Текущее время
+        rbZN.setChecked(TRUE);
         Date currentDate = new Date();
-        // Форматирование времени как "день.месяц.год"
-        DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-        String dateText = dateFormat.format(currentDate);
-        et_data.setText(dateText);
+        data_set(currentDate);
+    }
+
+    public void set_short_len(View view){
+        len_zakaz_naryad = 4;
+    }
+
+    public void set_long_len(View view){
+        len_zakaz_naryad = 5;
     }
 
     // проверка, что поля не пустые
     public boolean check_field(){
-        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
-        et_normo_chasy = findViewById(R.id.normochasy);
-        et_data = findViewById(R.id.data);
-
-
         String text = et_zakaz_naryad.getText().toString();
         if (text.length() != len_zakaz_naryad) {
-            focus_keyboard(et_zakaz_naryad," Введи номер заказ-наряда - 5 цифр");
+            focus_keyboard(et_zakaz_naryad," Введи номер заказ-наряда");
             return FALSE;
          }
 
@@ -220,13 +220,7 @@ public class MainActivity extends AppCompatActivity {
             return FALSE;
         }
 
-        text = et_data.getText().toString();
-        if (text.length() < 2) {
-            focus_keyboard(et_data,"Введи число");
-            return FALSE;
-        }
-
-    return TRUE;
+        return TRUE;
     }
 
     public void focus_keyboard(EditText editText, String str){
@@ -238,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // отображаем диалоговое окно для выбора даты
-    public void setDate(View v) {
+    public void setDate(View view) {
         new DatePickerDialog(MainActivity.this, d,
                 dateAndTime.get(Calendar.YEAR),
                 dateAndTime.get(Calendar.MONTH),
@@ -251,9 +245,43 @@ public class MainActivity extends AppCompatActivity {
             dateAndTime.set(Calendar.YEAR, year);
             dateAndTime.set(Calendar.MONTH, monthOfYear);
             dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            currentDateTime.setText(DateUtils.formatDateTime( MainActivity.this,dateAndTime.getTimeInMillis(),
-                    DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR
-                            | DateUtils.FORMAT_SHOW_TIME));
+            data_set(dateAndTime.getTime());
         }
     };
+
+    public void data_set(Date date){
+        //         Форматирование времени как "день.месяц.год"
+        DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        String dateText = dateFormat.format(date);
+        et_data.setText(dateText);
+        getSupportActionBar().setTitle("На " + dateText + " " + file_read() + "н/ч ");
+    };
+
+            // построчное считывание файла
+        public String file_read() {
+          double chasy = 0;
+            try {
+                File file = new File(FILE_NAME);
+                //создаем объект FileReader для объекта File
+                FileReader fr = new FileReader(file);
+                //создаем BufferedReader с существующего FileReader для построчного считывания
+                BufferedReader reader = new BufferedReader(fr);
+                // считаем сначала первую строку
+                String line = reader.readLine();
+
+                while (line != null) {
+                    chasy += Double.parseDouble(line.substring(line.lastIndexOf(" "),line.length()-3));
+                    // считываем остальные строки в цикле
+                    line = reader.readLine();
+                    Toast.makeText(this, line, Toast.LENGTH_SHORT).show();
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        return Double.toString(chasy);
+        };
+
+
 }

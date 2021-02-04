@@ -11,10 +11,11 @@
 
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="9"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:orientation="vertical"
+            android:layout_gravity="center">
             >
             <RadioGroup
                 android:layout_width="wrap_content"
@@ -28,14 +29,16 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="ЗН-36"
-                    android:checked="true"/>
+                    android:checked="true"
+                    android:onClick="set_long_len"/>
 
                 <RadioButton
                     android:id="@+id/radioButton2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="ЗНППП-116" />
+                    android:text="ЗНППП-116"
+                    android:onClick="set_short_len"/>
             </RadioGroup>
 
             <EditText
@@ -56,15 +59,15 @@
                 android:gravity="start"
                 android:hint="Сколько часов"
                 android:inputType="phone" />
-            <EditText
-                android:id="@+id/data"
+            <TextView
+                android:id="@+id/currentDateTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:gravity="start"
-                android:hint="Дата"
-                android:inputType="date" />
+                android:textSize="18dp"
+                android:text="ДАТА"
+                android:onClick="setDate"/>
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -72,41 +75,43 @@
                 android:layout_gravity="center"
                 android:onClick="saveText"
                 android:text="Сохранить"/>
-            <TextView
-                android:id="@+id/currentDateTime"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:gravity="center"
-                android:layout_weight="1"
-                android:onClick="setDate"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height= "0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center">
             <TextView
                 android:id="@+id/open_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="start"
-                android:layout_weight="30"/>
+                android:layout_gravity="center"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_height= "wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
             <Button
                 android:id="@+id/open_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="3"
+                android:layout_margin="10dp"
                 android:onClick="openText"
                 android:text="Открыть" />
 
             <Button
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="clearText"
-                android:text="Обнулить" />
+                android:layout_margin="10dp"
+                android:text="Удалить всё" />
         </LinearLayout>
 
     </LinearLayout>
