@@ -49,7 +49,7 @@
                 android:layout_weight="1"
                 android:gravity="start"
                 android:hint="Номер заказ-наряда"
-                android:inputType="numberDecimal" />
+                android:inputType="number" />
             <EditText
                 android:id="@+id/normochasy"
                 android:layout_width="wrap_content"
@@ -57,8 +57,8 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:gravity="start"
-                android:hint="Сколько часов"
-                android:inputType="phone" />
+                android:hint="Сколько нормоминут = н.ч * 100"
+                android:inputType="time" />
             <TextView
                 android:id="@+id/currentDateTime"
                 android:layout_width="wrap_content"
@@ -67,6 +67,7 @@
                 android:layout_weight="1"
                 android:textSize="18dp"
                 android:text="ДАТА"
+                android:layout_margin="10dp"
                 android:onClick="setDate"/>
             <Button
                 android:layout_width="wrap_content"
@@ -106,12 +107,13 @@
                 android:text="Открыть" />
 
             <Button
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="clearText"
                 android:layout_margin="10dp"
-                android:text="Удалить всё" />
+                android:textSize="8sp"
+                android:text="Удалить &#10;все записи" />
         </LinearLayout>
 
     </LinearLayout>

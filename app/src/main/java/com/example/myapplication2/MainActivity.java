@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import android.text.Editable;
@@ -24,8 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final static String FILE_NAME = "content.txt";
     int len_zakaz_naryad = 5;
+    char razdelitel = ',';
 
     RadioButton rbZN, rbZNPP;
     EditText    et_zakaz_naryad,
@@ -50,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getSupportActionBar().setTitle("Нормочасы"); //R.string.app_name);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -90,6 +93,30 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        et_normo_chasy.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s,
+                                      int start,
+                                      int before,
+                                      int count) {
+
+                Value = et_normo_chasy.getText().toString();
+//                System.out.println(s + " " + Value + " " + Value.substring(0, Value.length() - 2) );
+
+                if (!Character.isDigit(Value.charAt(Value.length() - 1))) {
+                    et_normo_chasy.setText(Value.substring(0, Value.length() - 2));
+                    System.out.println(s + " " + Value );
+//https://ru.stackoverflow.com/questions/554110/Как-в-edittext-отделить-разряды/554280#554280
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
     }
 
 
@@ -105,30 +132,32 @@ public class MainActivity extends AppCompatActivity {
 
         if (check_field()) {
             try {
-               String text = "Дата " + et_data.getText().toString() + " ";
+               String text = et_data.getText().toString() + razdelitel;
 
                if (rbZN.isChecked())
                     text = text + rbZN.getText().toString();
                else text = text + rbZNPP.getText().toString();
 
-               text = text + et_zakaz_naryad.getText().toString() + " ";
-               int int_chasy = 0;
+               text = text + et_zakaz_naryad.getText().toString() + razdelitel;
+
+               double int_chasy = 0;
                String chasy = et_normo_chasy.getText().toString();
                String[] summa_chasov = chasy.split("\\D"); // делю строку любыми символами кроме цифр
-               for (int i=0; i<summa_chasov.length; i++){int_chasy += Integer.parseInt(summa_chasov[i]);};
+               for (int i=0; i<summa_chasov.length; i++){int_chasy += Double.parseDouble(summa_chasov[i]);};
 
-               text = text + Double.toString(int_chasy/100) + "н/ч\r\n";
-
-               clearField();
+               text = text + int_chasy / 100 + "н/ч\r\n";
 
                fos = openFileOutput(FILE_NAME, MODE_APPEND);
                fos.write(text.getBytes());
                Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
+
+                clearField();
+
             } catch (IOException ex) {
 
                 Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
             } finally {
-                try {fos.close();}
+                try {if (fos!=null) fos.close();}
                  catch (IOException ex) {
 
                     Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
@@ -192,14 +221,19 @@ public class MainActivity extends AppCompatActivity {
     // очистка полей ввода
     public void clearField() {
         et_zakaz_naryad.setText("");
+        et_zakaz_naryad.requestFocus();
         et_normo_chasy.setText("");
         rbZN.setChecked(TRUE);
+        len_zakaz_naryad = 5;
         Date currentDate = new Date();
         data_set(currentDate);
     }
 
     public void set_short_len(View view){
         len_zakaz_naryad = 4;
+        if (et_zakaz_naryad.getText().toString().length() > len_zakaz_naryad + 1)
+            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
+// если уже набрали больше символов, то оставляем по длине
     }
 
     public void set_long_len(View view){
@@ -255,26 +289,39 @@ public class MainActivity extends AppCompatActivity {
         String dateText = dateFormat.format(date);
         et_data.setText(dateText);
         getSupportActionBar().setTitle("На " + dateText + " " + file_read() + "н/ч ");
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(0xff00FFED));
     };
 
             // построчное считывание файла
         public String file_read() {
-          double chasy = 0;
+            double chasy = 0;
+            int begin_of_nch, end_of_nch;
+            String line, hours;
             try {
-                File file = new File(FILE_NAME);
-                //создаем объект FileReader для объекта File
-                FileReader fr = new FileReader(file);
-                //создаем BufferedReader с существующего FileReader для построчного считывания
-                BufferedReader reader = new BufferedReader(fr);
-                // считаем сначала первую строку
-                String line = reader.readLine();
+                FileInputStream is = openFileInput(FILE_NAME);
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
 
-                while (line != null) {
-                    chasy += Double.parseDouble(line.substring(line.lastIndexOf(" "),line.length()-3));
-                    // считываем остальные строки в цикле
-                    line = reader.readLine();
-                    Toast.makeText(this, line, Toast.LENGTH_SHORT).show();
+                // read form the stream to build the media list
+                ArrayList<String> lstMedia = new ArrayList<String>();
+
+                while ((line = br.readLine()) != null) {
+                    if (!line.isEmpty()) {
+                        lstMedia.add(new String(line));
+
+                        begin_of_nch = line.lastIndexOf(razdelitel) + 1;
+                        end_of_nch = line.length() - 3;
+                        hours = line.substring(begin_of_nch,end_of_nch);
+                        System.out.println(line + " " + hours);
+                       chasy += Double.parseDouble(hours);
+                     }
                 }
+
+                // clean up
+                br.close();
+                isr.close();
+                is.close();
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
