@@ -58,7 +58,7 @@
                 android:layout_weight="1"
                 android:gravity="start"
                 android:hint="Сколько нормоминут = н.ч * 100"
-                android:inputType="time" />
+                android:inputType="phone" />
             <TextView
                 android:id="@+id/currentDateTime"
                 android:layout_width="wrap_content"
@@ -97,6 +97,7 @@
             android:layout_weight="1"
             android:orientation="horizontal"
             android:gravity="center_vertical">
+
             <Button
                 android:id="@+id/open_button"
                 android:layout_width="0dp"

@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         et_data = findViewById(R.id.currentDateTime);
         rbZN = findViewById(R.id.radioButton);
         rbZNPP = findViewById(R.id.radioButton2);
+        tv_open_text = (TextView) findViewById(R.id.open_text);
 
         clearField();
 
@@ -71,54 +73,54 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // TODO Auto-generated method stub
 
-                Value = et_zakaz_naryad.getText().toString();
 
-               if (Value.length() < len_zakaz_naryad + 1) et_zakaz_naryad.setTextColor(Color.RED);
-               else {
-                    et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                if (s.length() < len_zakaz_naryad + 1) et_zakaz_naryad.setTextColor(Color.RED);
+                else {
+                    s.delete(len_zakaz_naryad, s.length());
                     et_zakaz_naryad.setTextColor(Color.WHITE);
                     et_normo_chasy.requestFocus();}
             }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                                          int after) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // TODO Auto-generated method stub
-
-            }
         });
-        et_normo_chasy.addTextChangedListener(new TextWatcher() {
 
-            @Override
-            public void onTextChanged(CharSequence s,
-                                      int start,
-                                      int before,
-                                      int count) {
-
-                Value = et_normo_chasy.getText().toString();
-//                System.out.println(s + " " + Value + " " + Value.substring(0, Value.length() - 2) );
-
-                if (!Character.isDigit(Value.charAt(Value.length() - 1))) {
-                    et_normo_chasy.setText(Value.substring(0, Value.length() - 2));
-                    System.out.println(s + " " + Value );
-//https://ru.stackoverflow.com/questions/554110/Как-в-edittext-отделить-разряды/554280#554280
-                }
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-            @Override
-            public void afterTextChanged(Editable s) { }
-        });
+        et_normo_chasy.addTextChangedListener(new MyWatcher());
 
     }
 
+    public class MyWatcher implements TextWatcher {
+// замена любого символа в часах на плюсик и запрет на двойной символ
+// https://ru.stackoverflow.com/questions/554110/%D0%9A%D0%B0%D0%BA-%D0%B2-edittext-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D0%B8%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D1%8F%D0%B4%D1%8B/554280#554280
+        private static final char ad = '+';
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) { }
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            char c = ' ';
+
+            if (s.length() > 0) {
+                c = s.charAt(s.length() - 1);
+                if (!Character.isDigit(c)) {
+                    s.replace(s.length() - 1, s.length() , String.valueOf(ad));
+                    c = s.charAt(s.length() - 2);
+                    if (!Character.isDigit(c))
+                        s.delete(s.length() - 1, s.length());
+
+                }
+            }
+
+        }
+    }
 
 
 
@@ -152,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
 
                 clearField();
-
+                openText(view);
             } catch (IOException ex) {
 
                 Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
@@ -168,8 +170,6 @@ public class MainActivity extends AppCompatActivity {
     }
     // открытие файла
     public void openText(View view){
-
-        tv_open_text = (TextView) findViewById(R.id.open_text);
 
         FileInputStream fin = null;
         try {
@@ -197,8 +197,6 @@ public class MainActivity extends AppCompatActivity {
     }
     // удаление файла
     public void clearText(View view){
-
-        tv_open_text = (TextView) findViewById(R.id.open_text);
 
         FileInputStream fin = null;
         try {
@@ -232,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
     public void set_short_len(View view){
         len_zakaz_naryad = 4;
         if (et_zakaz_naryad.getText().toString().length() > len_zakaz_naryad + 1)
-            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
+            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad - 1));
 // если уже набрали больше символов, то оставляем по длине
     }
 
@@ -302,18 +300,12 @@ public class MainActivity extends AppCompatActivity {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
 
-                // read form the stream to build the media list
-                ArrayList<String> lstMedia = new ArrayList<String>();
-
                 while ((line = br.readLine()) != null) {
                     if (!line.isEmpty()) {
-                        lstMedia.add(new String(line));
-
                         begin_of_nch = line.lastIndexOf(razdelitel) + 1;
                         end_of_nch = line.length() - 3;
                         hours = line.substring(begin_of_nch,end_of_nch);
-                        System.out.println(line + " " + hours);
-                       chasy += Double.parseDouble(hours);
+                        chasy += Double.parseDouble(hours);
                      }
                 }
 
