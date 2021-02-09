@@ -68,30 +68,23 @@ public class MainActivity extends AppCompatActivity {
         clearField();
 
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
-
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // TODO Auto-generated method stub
-
-
-
-            }
-
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
             @Override
             public void afterTextChanged(Editable s) {
-
-                if (s.length() < len_zakaz_naryad + 1) et_zakaz_naryad.setTextColor(Color.RED);
-                else {
-                    s.delete(len_zakaz_naryad, s.length());
-                    et_zakaz_naryad.setTextColor(Color.WHITE);
-                    et_normo_chasy.requestFocus();}
+                if (s.length() < len_zakaz_naryad) et_zakaz_naryad.setTextColor(Color.RED);
+                else { et_zakaz_naryad.setTextColor(Color.WHITE);
+                       et_normo_chasy.requestFocus();
+                        if (s.length() > len_zakaz_naryad)
+                            s.delete(len_zakaz_naryad, s.length());
+                }
             }
         });
 
         et_normo_chasy.addTextChangedListener(new MyWatcher());
-
     }
 
     public class MyWatcher implements TextWatcher {
@@ -107,15 +100,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void afterTextChanged(Editable s) {
             char c = ' ';
-
             if (s.length() > 0) {
                 c = s.charAt(s.length() - 1);
                 if (!Character.isDigit(c)) {
-                    s.replace(s.length() - 1, s.length() , String.valueOf(ad));
+//                    s.delete(s.length() - 1,s.length());
+//                   s.(ad);
+//                    не получается ввести плюсик вместо символа
                     c = s.charAt(s.length() - 2);
-                    if (!Character.isDigit(c))
+                    if (!Character.isDigit(c)) {
                         s.delete(s.length() - 1, s.length());
-
+                        Toast.makeText(getApplicationContext(), "Только один разделитель", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
@@ -229,8 +224,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void set_short_len(View view){
         len_zakaz_naryad = 4;
-        if (et_zakaz_naryad.getText().toString().length() > len_zakaz_naryad + 1)
-            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad - 1));
+        Value = et_zakaz_naryad.getText().toString();
+        if (Value.length() > len_zakaz_naryad)
+            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
 // если уже набрали больше символов, то оставляем по длине
     }
 
@@ -240,14 +236,16 @@ public class MainActivity extends AppCompatActivity {
 
     // проверка, что поля не пустые
     public boolean check_field(){
-        String text = et_zakaz_naryad.getText().toString();
-        if (text.length() != len_zakaz_naryad) {
-            focus_keyboard(et_zakaz_naryad," Введи номер заказ-наряда");
+        Value = et_zakaz_naryad.getText().toString();
+        if (Value.length() > len_zakaz_naryad)
+            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
+        else if (Value.length() < len_zakaz_naryad) {
+            focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
             return FALSE;
-         }
+        }
 
-        text = et_normo_chasy.getText().toString();
-        if (text.length() < 2) {
+        Value = et_normo_chasy.getText().toString();
+        if (Value.length() < 2) {
             focus_keyboard(et_normo_chasy,"Введи часы за работу, помноженные на 100, т.е. 0.5 н/ч = 50");
             return FALSE;
         }
@@ -308,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
                         chasy += Double.parseDouble(hours);
                      }
                 }
-
+            chasy =  Math.round(chasy * 100);
                 // clean up
                 br.close();
                 isr.close();
@@ -319,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        return Double.toString(chasy);
+        return Double.toString(chasy/100);
         };
 
 
