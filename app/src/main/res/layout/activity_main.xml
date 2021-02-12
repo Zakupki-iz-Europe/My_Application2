@@ -13,7 +13,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:orientation="vertical"
             android:layout_gravity="center">
             >
@@ -82,7 +82,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height= "0dp"
-            android:layout_weight="1"
+            android:layout_weight="3"
             android:layout_gravity="center">
             <TextView
                 android:id="@+id/open_text"
@@ -108,7 +108,7 @@
                 android:text="Открыть" />
 
             <Button
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="clearText"
