@@ -5,12 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
@@ -48,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
     EditText    et_zakaz_naryad,
                 et_normo_chasy;
     TextView tv_open_text,
-            et_data;
+             et_data,
+             tv_header;
     String Value;
 
     Calendar dateAndTime=Calendar.getInstance();
@@ -64,9 +71,9 @@ public class MainActivity extends AppCompatActivity {
         rbZN = findViewById(R.id.radioButton);
         rbZNPP = findViewById(R.id.radioButton2);
         tv_open_text = (TextView) findViewById(R.id.open_text);
-
+        tv_header = (TextView) findViewById(R.id.header);
         clearField();
-
+        openText(et_data);
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -284,8 +291,12 @@ public class MainActivity extends AppCompatActivity {
         DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
         String dateText = dateFormat.format(date);
         et_data.setText(dateText);
-        getSupportActionBar().setTitle("На " + dateText + " " + file_read() + "н/ч ");
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(0xff00FFED));
+        getSupportActionBar().hide();
+        Spannable text = new SpannableString("На " + dateText + " " + file_read() + "н/ч ");
+        text.setSpan(new StyleSpan(Typeface.ITALIC), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new ForegroundColorSpan(Color.GREEN), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        tv_header.setText(text);
+
     };
 
             // построчное считывание файла
