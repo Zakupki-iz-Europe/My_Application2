@@ -10,13 +10,21 @@
         android:orientation="vertical">
 
 
+        <TextView
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:text="TextView" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:orientation="vertical"
             android:layout_gravity="center">
-            >
+
             <RadioGroup
                 android:layout_width="wrap_content"
                 android:layout_weight="1"
@@ -82,7 +90,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height= "0dp"
-            android:layout_weight="3"
+            android:layout_weight="1"
             android:layout_gravity="center">
             <TextView
                 android:id="@+id/open_text"
@@ -108,7 +116,7 @@
                 android:text="Открыть" />
 
             <Button
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="clearText"
@@ -116,6 +124,11 @@
                 android:textSize="8sp"
                 android:text="Удалить &#10;все записи" />
         </LinearLayout>
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
     </LinearLayout>
 
