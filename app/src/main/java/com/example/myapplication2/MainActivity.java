@@ -56,7 +56,7 @@ import static java.lang.Boolean.TRUE;
 
 
 public class MainActivity extends AppCompatActivity {
-
+//https://github.com/ravi8x/AndroidSQLite.git
     private final static String FILE_NAME = "content.txt";
     int len_zakaz_naryad = 5;
     char razdelitel = ',';
@@ -85,10 +85,11 @@ public class MainActivity extends AppCompatActivity {
         public void onCreate(SQLiteDatabase db) {
             Log.d(LOG_TAG, "--- onCreate database ---");
             // создаем таблицу с полями
-            db.execSQL("create table mytable (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            db.execSQL("create table mytable ("
+                    + "id integer primary key autoincrement,"
                     + "Дата text, "
                     + "Заказ_наряд text, "
-                    + "Часы text);");
+                    + "Часы long" + ");");
         }
 
         @Override
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         tv_open_text = (TextView) findViewById(R.id.open_text);
         tv_header = (TextView) findViewById(R.id.header);
         clearField();
-//        openText(et_data);
+       openText(et_data);
 
 
         cv = new ContentValues();
@@ -309,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
                             "ID = " + c.getInt(idColIndex) +
                                     ", Дата = " + c.getString(dataColIndex) +
                                     ", Заказ_наряд = " + c.getString(znlColIndex) +
-                                    ", Часы = " + c.getString(chasyColIndex)
+                                    ", Часы = " + c.getLong(chasyColIndex)
                     );
                     // переход на следующую строку
                     // а если следующей нет (текущая - последняя), то false - выходим из цикла
