@@ -1,28 +1,21 @@
 package com.example.myapplication2;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.RippleDrawable;
 import android.os.Bundle;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
@@ -35,12 +28,12 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapplication2.sqlite.DatabaseHelper;
+import com.example.myapplication2.sqlite.Note;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
@@ -48,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -61,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     int len_zakaz_naryad = 5;
     char razdelitel = ',';
     final String LOG_TAG = "myLogs";
+    public DatabaseHelper db;
+
     RadioButton rbZN, rbZNPP;
     EditText et_zakaz_naryad,
             et_normo_chasy;
@@ -69,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
             tv_header;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
-    DBHelper dbHelper;
+//    DBHelper dbHelper;
     // создаем объект для данных
-    ContentValues cv;
-    SQLiteDatabase db;
+//    ContentValues cv;
+//    SQLiteDatabase db;
 
     class DBHelper extends SQLiteOpenHelper {
 
@@ -102,42 +98,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        dbHelper = new DBHelper(this);
-//        SQLiteDatabase db;
-//        FileInputStream fin = null;
-        db = dbHelper.getWritableDatabase();
-//            }
-        //
-//        public class ContactsFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> { private CursorAdapter mAdapter; private Context context; //this is the Context you will use TextView idView;
-//             @Override public void onCreate(Bundle savedInstanceState) { super.onCreate(savedInstanceState); // create adapter once //
-//                  Context context = getActivity(); //Here was the problem //
-//                  int layout = R.layout.activity_list_item_1;
-//                  Cursor c = null; // there is no cursor yet
-//                  int flags = 0; // no auto-requery! Loader requeries. //
-//                  mAdapter = new SimpleCursorAdapter(context, layout, c, FROM, TO, flags); }
-//                  public void ContactsDb(Context context) { this.context=context; }
-//                  Uri contentUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-//             String[] PROJECTION = { ContactsContract.Contacts.HAS_PHONE_NUMBER, ContactsContract.Contacts._ID, // _ID is always required ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY, // that is what we want to display Contacts.TIMES_CONTACTED, ContactsContract.CommonDataKinds.Phone.NUMBER };
-//                      @Override public void onActivityCreated(Bundle savedInstanceState) { super.onActivityCreated(savedInstanceState); //Add this here:
-//                           context = getActivity(); //use the instance variable
-//                           int layout = R.layout.activity_list_item_1;
-//                           Cursor c = null; // there is no cursor yet int flags = 0; // no auto-requery! Loader requeries.
-//                           mAdapter = new SimpleCursorAdapter(context, layout, c, FROM, TO, flags); // each time we are started use our listadapter setListAdapter(mAdapter); // and tell loader manager to start loading getLoaderManager().initLoader(0, null, this); } // columns requested from the database // and name should be displayed in the text1 textview in item layout
-//                           public String[] has_phone = {ContactsContract.Contacts.HAS_PHONE_NUMBER};
-//                           String phone = "0";
-//                           int dbPhone = 0;
-//                           private final String[] FROM = {Contacts.DISPLAY_NAME_PRIMARY, ContactsContract.CommonDataKinds.Phone.NUMBER};
-//                           private final int[] TO = {android.R.id.text1, dbPhone};
-//                           public void newContact (View view) { //context should now be valid:
-//                                MyDBHandler dbHandler = new MyDBHandler(context, null, null, 1);
-//                                String name = Contacts.DISPLAY_NAME_PRIMARY;
-//                                int dbPhone = Integer.parseInt(phone);
-//                                String status ="";
-//                                String blurb ="";
-//                                ContactsDb contacts = new ContactsDb(name, dbPhone, status, blurb);
-//                                dbHandler.addContact(contacts);
-//                                } //........
-//
+//        dbHelper = new DBHelper(this);
+//        db = dbHelper.getWritableDatabase();
+        db = new DatabaseHelper(this);
 
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
         et_normo_chasy = findViewById(R.id.normochasy);
@@ -147,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
         tv_open_text = (TextView) findViewById(R.id.open_text);
         tv_header = (TextView) findViewById(R.id.header);
         clearField();
-       openText(et_data);
+        openText(et_data);
 
 
-        cv = new ContentValues();
-        Log.d(LOG_TAG, "--- onCreate database ---");
+//        cv = new ContentValues();
+//        Log.d(LOG_TAG, "--- onCreate database ---");
         // создаем таблицу с полями
 
 //        int color = ((RippleDrawable) rbZN.getButtonDrawable()).get;
@@ -204,9 +167,6 @@ public class MainActivity extends AppCompatActivity {
             if (s.length() > 0) {
                 c = s.charAt(s.length() - 1);
                 if (!Character.isDigit(c)) {
-//                    s.delete(s.length() - 1,s.length());
-//                   s.(ad);
-//                    не получается ввести плюсик вместо символа
                     c = s.charAt(s.length() - 2);
                     if (!Character.isDigit(c)) {
                         s.delete(s.length() - 1, s.length());
@@ -225,43 +185,36 @@ public class MainActivity extends AppCompatActivity {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
+        Note note = new Note();
         FileOutputStream fos = null;
 
         if (check_field()) {
             try {
-                Log.d(LOG_TAG, "--- Insert in mytable: ---");
-//                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                note.setData(et_data.getText().toString());
 
-                String text = et_data.getText().toString() + razdelitel;
-
-                // подготовим данные для вставки в виде пар: наименование столбца - значение
-                cv.put("Дата", et_data.getText().toString());
+                String text = note.getData() + razdelitel;
 
                 if (rbZN.isChecked())
-                    text = text + rbZN.getText().toString();
-                else text = text + rbZNPP.getText().toString();
+                    note.setZak(rbZN.getText().toString());
+                else  note.setZak(rbZNPP.getText().toString());
+                note.setZak(note.getZak() +  et_zakaz_naryad.getText().toString());
 
-                text = text + et_zakaz_naryad.getText().toString() + razdelitel;
+                text = text + note.getZak() + razdelitel;
 
-                cv.put("Заказ_наряд", et_zakaz_naryad.getText().toString());
-
-                double int_chasy = 0;
+                long int_chasy = 0;
                 String chasy = et_normo_chasy.getText().toString();
                 String[] summa_chasov = chasy.split("\\D"); // делю строку любыми символами кроме цифр
                 for (int i = 0; i < summa_chasov.length; i++) {
-                    int_chasy += Double.parseDouble(summa_chasov[i]);
+                    int_chasy += Long.parseLong(summa_chasov[i]);
                 }
-                text = text + int_chasy / 100 + "н/ч\r\n";
+                note.setChas(int_chasy / 100);
 
-                cv.put("Часы", int_chasy / 100);
-// вставляем запись и получаем ее ID
-                long rowID = db.insert("mytable", null, cv);
-                Log.d(LOG_TAG, "row inserted, ID = " + rowID);
-//                dbHelper.close();
+                text = text + note.getChas() + "н/ч\r\n";
+                db.insertNote(note);
+
                 fos = openFileOutput(FILE_NAME, MODE_APPEND);
                 fos.write(text.getBytes());
                 Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
-
                 clearField();
                 openText(view);
 
@@ -282,44 +235,17 @@ public class MainActivity extends AppCompatActivity {
 
     // открытие файла
     public void openText(View view) {
-//        SQLiteDatabase db;
         FileInputStream fin = null;
         try {
-//            try {
-//                db = dbHelper.getWritableDatabase();
-//            }
-//            catch (SQLiteException ex){
-//                db = dbHelper.getWritableDatabase();
-            Log.d(LOG_TAG, "--- Rows in mytable: ---");
-            // делаем запрос всех данных из таблицы mytable, получаем Cursor
-            Cursor c = db.query("mytable", null, null, null, null, null, null);
-
-            // ставим позицию курсора на первую строку выборки
-            // если в выборке нет строк, вернется false
-            if (((Cursor) c).moveToFirst()) {
-
-                // определяем номера столбцов по имени в выборке
-                int idColIndex = c.getColumnIndex("id");
-                int dataColIndex = c.getColumnIndex("Дата");
-                int znlColIndex = c.getColumnIndex("Заказ_наряд");
-                int chasyColIndex = c.getColumnIndex("Часы");
-
-                do {
-                    // получаем значения по номерам столбцов и пишем все в лог
-                    Log.d(LOG_TAG,
-                            "ID = " + c.getInt(idColIndex) +
-                                    ", Дата = " + c.getString(dataColIndex) +
-                                    ", Заказ_наряд = " + c.getString(znlColIndex) +
-                                    ", Часы = " + c.getLong(chasyColIndex)
-                    );
-                    // переход на следующую строку
-                    // а если следующей нет (текущая - последняя), то false - выходим из цикла
-                } while (c.moveToNext());
-            } else
-                Log.d(LOG_TAG, "0 rows");
-            c.close();
-//            dbHelper.close();
-
+            List<Note> notes = db.getAllNotes();
+            for (int i=0; i<db.getNotesCount();i++){
+                Log.d(LOG_TAG,
+                        "id = " + notes.get(i).getId() +
+                             ", Дата = " + notes.get(i).getData() +
+                             ", Заказ_наряд = " + notes.get(i).getZak() +
+                             ", Часы = " + notes.get(i).getChas()
+                );
+           }
             fin = openFileInput(FILE_NAME);
             byte[] bytes = new byte[fin.available()];
             fin.read(bytes);
@@ -346,12 +272,9 @@ public class MainActivity extends AppCompatActivity {
         FileInputStream fin = null;
         try {
             Log.d(LOG_TAG, "--- Clear mytable: ---");
-            // удаляем все записи
-            int clearCount = db.delete("mytable", null, null);
-            Log.d(LOG_TAG, "deleted rows count = " + clearCount);
-//            dbHelper.close();
             deleteFile(FILE_NAME);
             tv_open_text.setText(null);
+            db.deleteAllNotes();
             clearField();
         } finally {
 
