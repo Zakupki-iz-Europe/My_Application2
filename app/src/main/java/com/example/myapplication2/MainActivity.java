@@ -62,13 +62,10 @@ public class MainActivity extends AppCompatActivity {
             et_normo_chasy;
     TextView tv_open_text,
             et_data,
-            tv_header;
+            tv_header,
+            tv_raboty;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
-//    DBHelper dbHelper;
-    // создаем объект для данных
-//    ContentValues cv;
-//    SQLiteDatabase db;
 
     class DBHelper extends SQLiteOpenHelper {
 
@@ -109,20 +106,9 @@ public class MainActivity extends AppCompatActivity {
         rbZNPP = findViewById(R.id.radioButton2);
         tv_open_text = (TextView) findViewById(R.id.open_text);
         tv_header = (TextView) findViewById(R.id.header);
+        tv_raboty = (TextView) findViewById(R.id.tv_chasy);
         clearField();
         openText(et_data);
-
-
-//        cv = new ContentValues();
-//        Log.d(LOG_TAG, "--- onCreate database ---");
-        // создаем таблицу с полями
-
-//        int color = ((RippleDrawable) rbZN.getButtonDrawable()).get;
-//        Resources resources = getResources();
-//        Resources.Theme theme = getTheme();
-//        int textColor = ContextCompat.getColor(android.context, R.color.teal_200  );
-//                resources.getColor(R.color.textViewFontColor,  null);
-//        et_normo_chasy.setBackgroundColor( getResources().getColor(R.color.teal_200); //R.color.design_default_color_on_primary);
 
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
             @Override
@@ -163,19 +149,31 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void afterTextChanged(Editable s) {
-            char c = ' ';
-            if (s.length() > 0) {
-                c = s.charAt(s.length() - 1);
-                if (!Character.isDigit(c)) {
-                    c = s.charAt(s.length() - 2);
-                    if (!Character.isDigit(c)) {
-                        s.delete(s.length() - 1, s.length());
-                        Toast.makeText(getApplicationContext(), "Только один разделитель", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-
+//            char c = s.charAt(s.length() - 1);
+//                if (!Character.isDigit(c)) {
+//                    if (s.length() == 1) {
+//                        s.delete(s.length() - 1, s.length());
+//                        Toast.makeText(getApplicationContext(), "Цифры нужны", Toast.LENGTH_SHORT).show();
+//                    }
+//                    else {
+//                        c = s.charAt(s.length() - 2);
+//                        if (!Character.isDigit(c)) {
+//                            s.delete(s.length() - 1, s.length());
+//                            Toast.makeText(getApplicationContext(), "Только один разделитель", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//
+//
+//            }
+if (s.length() > 4) addJob(et_normo_chasy);
         }
+    }
+
+    public void addJob(View view) {
+        String firstJob = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
+        et_normo_chasy.setText("");
+        firstJob = firstJob + " + ";
+        tv_raboty.setText(firstJob);
     }
 
 
@@ -202,10 +200,11 @@ public class MainActivity extends AppCompatActivity {
                 text = text + note.getZak() + razdelitel;
 
                 long int_chasy = 0;
-                String chasy = et_normo_chasy.getText().toString();
+                String chasy = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
+                Log.d(LOG_TAG, chasy);
                 String[] summa_chasov = chasy.split("\\D"); // делю строку любыми символами кроме цифр
                 for (int i = 0; i < summa_chasov.length; i++) {
-                    int_chasy += Long.parseLong(summa_chasov[i]);
+                    if (summa_chasov[i].length() > 3) int_chasy += Long.parseLong(summa_chasov[i]);
                 }
                 note.setChas(int_chasy / 100);
 
@@ -294,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
         et_zakaz_naryad.setText("");
         et_zakaz_naryad.requestFocus();
         et_normo_chasy.setText("");
+        tv_raboty.setText("");
         rbZN.setChecked(TRUE);
         len_zakaz_naryad = 5;
         Date currentDate = new Date();
