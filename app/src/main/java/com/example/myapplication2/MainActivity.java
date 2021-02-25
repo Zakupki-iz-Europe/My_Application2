@@ -13,10 +13,12 @@ import android.os.Bundle;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.DigitsKeyListener;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
@@ -44,6 +46,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -130,7 +134,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+//        et_normo_chasy.setKeyListener(DigitsKeyListener.getInstance(false,true));
+//        et_normo_chasy.setFilters(new InputFilter[] {new DecimalDigitsInputFilter(5,2)});
         et_normo_chasy.addTextChangedListener(new MyWatcher());
     }
 
@@ -149,7 +154,24 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void afterTextChanged(Editable s) {
-//            char c = s.charAt(s.length() - 1);
+            char c = s.charAt(s.length() - 1);
+            int len = s.length();
+            switch(len) {
+                case 1:
+                    if ((c == '.')||(c == '0')) s.replace(0,len-1,"00.00");
+                            else s.insert(0,"00.0");
+                    break;
+                case 6:
+                    s.delete(2,3);
+                    s.insert(3,".");
+                    if (s.charAt(0) == '0') s.delete(0,1);
+                        else addJob(et_normo_chasy);
+                    break;
+                default:
+                    Toast.makeText(getApplicationContext(), "Что-то пошло не так", Toast.LENGTH_SHORT).show();
+                      break;
+            }
+            //            char c = s.charAt(s.length() - 1);
 //                if (!Character.isDigit(c)) {
 //                    if (s.length() == 1) {
 //                        s.delete(s.length() - 1, s.length());
@@ -165,16 +187,39 @@ public class MainActivity extends AppCompatActivity {
 //
 //
 //            }
-if (s.length() > 4) addJob(et_normo_chasy);
+//if (s.length() > 4) addJob(et_normo_chasy);
         }
     }
 
-    public void addJob(View view) {
-        String firstJob = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
-        et_normo_chasy.setText("");
-        firstJob = firstJob + " + ";
-        tv_raboty.setText(firstJob);
+    public class DecimalDigitsInputFilter implements InputFilter {
+
+        Pattern mPattern;
+
+        public DecimalDigitsInputFilter(int digitsBeforeZero,int digitsAfterZero) {
+            mPattern= Pattern.compile("[0-9]{0," + (digitsBeforeZero-1) + "}+((\\.[0-9]{0," + (digitsAfterZero-1) + "})?)||(\\.)?");
+        }
+
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+
+            Matcher matcher=mPattern.matcher(dest);
+            if(!matcher.matches())
+                return "";
+            return null;
+        }
+
     }
+
+    public void addJob(View view) {
+        String raboty = tv_raboty.getText().toString();
+        String chasyki = et_normo_chasy.getText().toString();
+        if (chasyki.length() > 2) {
+            String firstJob = raboty + chasyki;
+            et_normo_chasy.setText("");
+            firstJob = firstJob + " + ";
+            tv_raboty.setText(firstJob);
+        }
+   }
 
 
     // сохранение файла
@@ -322,9 +367,9 @@ if (s.length() > 4) addJob(et_normo_chasy);
             return FALSE;
         }
 
-        Value = et_normo_chasy.getText().toString();
+        Value = et_normo_chasy.getText().toString() + tv_raboty.getText().toString();
         if (Value.length() < 2) {
-            focus_keyboard(et_normo_chasy, "Введи часы за работу, помноженные на 100, т.е. 0.5 н/ч = 50");
+            focus_keyboard(et_normo_chasy, "Введи часы за работу");
             return FALSE;
         }
 

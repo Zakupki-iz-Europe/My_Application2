@@ -58,6 +58,20 @@
                 android:gravity="start"
                 android:hint="Номер заказ-наряда"
                 android:inputType="number" />
+            <TextView
+                android:id="@+id/tv_chasy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text=""/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_gravity="center">
             <EditText
                 android:id="@+id/normochasy"
                 android:layout_width="wrap_content"
@@ -65,8 +79,18 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:gravity="start"
-                android:hint="Сколько нормоминут = н.ч * 100"
+                android:hint="00.00"
                 android:inputType="time" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:onClick="addJob"
+                    android:text="Добавить"/>
+
+            </LinearLayout>
             <TextView
                 android:id="@+id/currentDateTime"
                 android:layout_width="wrap_content"
