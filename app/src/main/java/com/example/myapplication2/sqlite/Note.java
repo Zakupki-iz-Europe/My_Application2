@@ -11,7 +11,7 @@ public class Note {
     private int id;
     private String zak;
     private String data;
-    private long chas;
+    private double chas;
 
     // Create table SQL query
     public static final String CREATE_TABLE =
@@ -19,13 +19,13 @@ public class Note {
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + COLUMN_ZAK + " TEXT,"
                     + COLUMN_DATE + " TEXT,"
-                    + COLUMN_CHAS + " LONG"
+                    + COLUMN_CHAS + " DOUBLE"
                     + ")";
 
     public Note() {
     }
 
-    public Note(int id, String zak, String data, long chas) {
+    public Note(int id, String zak, String data, double chas) {
         this.id = id;
         this.zak = zak;
         this.data = data;
@@ -56,7 +56,7 @@ public class Note {
         this.data = data;
     }
 
-    public Long getChas() {return chas;}
+    public double getChas() {return chas;}
 
-    public void setChas(Long chas) {this.chas = chas; }
+    public void setChas(double chas) {this.chas = chas; }
 }

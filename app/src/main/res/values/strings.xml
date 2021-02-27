@@ -3,9 +3,9 @@
     <string name="_36">ЗН-36</string>
     <string name="_116">ЗНППП-116</string>
     <string name="save_text">Сохранить</string>
-    <string name="normo_chasy">Сколько нормоминут = н.ч * 100</string>
     <string name="zn_number">Номер заказ-наряда</string>
     <string name="zag2">ЗНППП-116</string>
     <string name="zag1">ЗН-36</string>
     <string name="del_strings">Удалить \nвсе записи</string>
+    <string name="vsego_chasov">Всего часов:</string>
 </resources>
