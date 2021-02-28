@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
             et_data,
             tv_header,
             tv_raboty;
+    ListView listView;
     Switch sw_theme;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
@@ -122,8 +124,9 @@ public class MainActivity extends AppCompatActivity {
         tv_open_text = (TextView) findViewById(R.id.open_text);
         tv_header = (TextView) findViewById(R.id.header);
         tv_raboty = (TextView) findViewById(R.id.tv_chasy);
+        listView =findViewById(R.id.list_v);
+//        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
         clearField();
-
         openText(et_data);
         ColorStateList oldColors_background =  rbZN.getLinkTextColors();
         ColorStateList oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
