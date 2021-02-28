@@ -11,14 +11,14 @@
             android:id="@+id/header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="24sp"
             android:layout_gravity="center"/>
 
         <View
-            android:id="@+id/divider2"
+            android:id="@+id/divider"
             android:layout_width="match_parent"
-            android:layout_height="5dp"
-            android:background="@color/teal_200" />
+            android:layout_height="4dp"
+           />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -48,7 +48,7 @@
                     android:layout_weight="1"
                     android:text="@string/_36"
                     android:checked="true"
-                    android:textSize="18dp"
+                    android:textSize="16dp"
 
                     android:onClick="set_long_len"/>
 
@@ -58,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/_116"
-                    android:textSize="18dp"
+                    android:textSize="16dp"
 
                     android:onClick="set_short_len"/>
             </RadioGroup>
@@ -77,8 +77,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/vsego_chasov"
-                android:gravity="center"/>
+                android:onClick="delText"
+                android:text="@string/vsego_chasov" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -115,16 +115,13 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:textSize="18dp"
-                android:text="ДАТА"
-                android:layout_margin="10dp"
+                android:textSize="16dp"
                 android:onClick="setDate"/>
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="20dp"
                 android:onClick="saveText"
                 android:text="Сохранить"/>
 
@@ -148,7 +145,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="clearText"
-                    android:layout_margin="10dp"
+                    android:layout_margin="8dp"
                     android:layout_gravity="end"
                     android:textSize="12sp"
                     android:text="@string/del_strings" />

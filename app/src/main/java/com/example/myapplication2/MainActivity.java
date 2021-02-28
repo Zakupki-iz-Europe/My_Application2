@@ -2,9 +2,12 @@ package com.example.myapplication2;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -12,12 +15,10 @@ import android.os.Bundle;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.method.DigitsKeyListener;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
@@ -26,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,17 +41,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -64,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     char razdelitel = ',';
     final String LOG_TAG = "myLogs";
     public DatabaseHelper db;
-
+    int mainTheme = R.style.Theme_newTheme;
     RadioButton rbZN, rbZNPP;
     EditText et_zakaz_naryad,
             et_normo_chasy;
@@ -72,8 +69,17 @@ public class MainActivity extends AppCompatActivity {
             et_data,
             tv_header,
             tv_raboty;
+    Switch sw_theme;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
+
+    public void delText(View view) {
+        String str = tv_raboty.getText().toString();
+        String endStr = str;
+        if (str.indexOf(razdelitel) > 0)  endStr = str.substring(0,str.lastIndexOf(razdelitel) - 2);
+        tv_raboty.setText(endStr);
+    }
+
 
     class DBHelper extends SQLiteOpenHelper {
 
@@ -101,12 +107,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+//        sw_theme = findViewById(R.id.switch1);
+//         setTheme(mainTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        dbHelper = new DBHelper(this);
-//        db = dbHelper.getWritableDatabase();
-        db = new DatabaseHelper(this);
+//        if (sw_theme.isChecked()) mainTheme = R.style.Theme_AppCompat_DayNight;
 
+        db = new DatabaseHelper(this);
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
         et_normo_chasy = findViewById(R.id.normochasy);
         et_data = findViewById(R.id.currentDateTime);
@@ -116,8 +123,12 @@ public class MainActivity extends AppCompatActivity {
         tv_header = (TextView) findViewById(R.id.header);
         tv_raboty = (TextView) findViewById(R.id.tv_chasy);
         clearField();
-        openText(et_data);
 
+        openText(et_data);
+        ColorStateList oldColors_background =  rbZN.getLinkTextColors();
+        ColorStateList oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
+        Log.d(LOG_TAG, oldColors+ "-------" + oldColors_background);
+        findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -131,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 if (s.length() < len_zakaz_naryad) et_zakaz_naryad.setTextColor(Color.RED);
                 else {
-                    et_zakaz_naryad.setTextColor(Color.WHITE);
+                    et_zakaz_naryad.setTextColor(oldColors);
                     et_normo_chasy.requestFocus();
                     et_normo_chasy.setSelection(et_normo_chasy.getText().length());
                     if (s.length() > len_zakaz_naryad)
@@ -139,9 +150,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-//        et_normo_chasy.setKeyListener(DigitsKeyListener.getInstance(false,true));
-//        et_normo_chasy.setFilters(new InputFilter[] {new DecimalDigitsInputFilter(5,2)});
-//        et_normo_chasy.addTextChangedListener(new NumberTextWatcher(et_normo_chasy));
    et_normo_chasy.addTextChangedListener(new MyWatcher());
     }
 
@@ -186,6 +194,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+    }
+
+    public void changeTheme(View view) {
+        Log.d(LOG_TAG, "-------" + this.getTheme());
+        setTheme(R.style.Theme_AppCompat_DayNight);
+        recreate();
     }
 
     public void addJob(View view) {
