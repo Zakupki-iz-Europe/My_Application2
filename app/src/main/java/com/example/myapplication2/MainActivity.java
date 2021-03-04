@@ -1,19 +1,22 @@
 package com.example.myapplication2;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import android.os.Bundle;
+import android.widget.ExpandableListView;
+import android.widget.SimpleExpandableListAdapter;
 import android.app.DatePickerDialog;
 import android.content.Context;
-
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -28,10 +31,9 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.Switch;
+//import MyRecyclerViewAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.myapplication2.sqlite.DatabaseHelper;
 import com.example.myapplication2.sqlite.Note;
 import java.io.BufferedReader;
@@ -53,8 +55,30 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
     //https://github.com/ravi8x/AndroidSQLite.git
+    // названия компаний (групп)
+    String[] groups = new String[] {"HTC", "Samsung", "LG"};
+
+    // названия телефонов (элементов)
+    String[] phonesHTC = new String[] {"Sensation", "Desire", "Wildfire", "Hero"};
+    String[] phonesSams = new String[] {"Galaxy S II", "Galaxy Nexus", "Wave"};
+    String[] phonesLG = new String[] {"Optimus", "Optimus Link", "Optimus Black", "Optimus One"};
+
+    // коллекция для групп
+    ArrayList<Map<String, String>> groupData;
+
+    // коллекция для элементов одной группы
+    ArrayList<Map<String, String>> childDataItem;
+
+    // общая коллекция для коллекций элементов
+    ArrayList<ArrayList<Map<String, String>>> childData;
+    // в итоге получится childData = ArrayList<childDataItem>
+
+    // список атрибутов группы или элемента
+    Map<String, String> m;
+
+    ExpandableListView elvMain;
     private final static String FILE_NAME = "content.txt";
     private final static String NULLI = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
@@ -70,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
             et_data,
             tv_header,
             tv_raboty;
-    ListView listView;
-    Switch sw_theme;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
 
@@ -107,13 +129,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+        MyRecyclerViewAdapter adapter;
+
+        @Override
+        public void onItemClick(View view, int position) {
+            Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+        }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        sw_theme = findViewById(R.id.switch1);
-//         setTheme(mainTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        if (sw_theme.isChecked()) mainTheme = R.style.Theme_AppCompat_DayNight;
+
+        // data to populate the RecyclerView with
+        ArrayList<String> animalNames = new ArrayList<>();
+        animalNames.add("Horse");
+        animalNames.add("Cow");
+        animalNames.add("Camel");
+        animalNames.add("Sheep");
+        animalNames.add("Goat");
+
+        // set up the RecyclerView
+        LinearLayoutManager layoutManager
+                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        RecyclerView recyclerView = findViewById(R.id.rvAnimals);
+        recyclerView.setLayoutManager(layoutManager);
+
+        adapter = new MyRecyclerViewAdapter(this, animalNames);
+        adapter.setClickListener(this);
+        recyclerView.setAdapter(adapter);
 
         db = new DatabaseHelper(this);
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
@@ -124,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
         tv_open_text = (TextView) findViewById(R.id.open_text);
         tv_header = (TextView) findViewById(R.id.header);
         tv_raboty = (TextView) findViewById(R.id.tv_chasy);
-        listView =findViewById(R.id.list_v);
+       // listView =findViewById(R.id.list_v);
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
         clearField();
         openText(et_data);
@@ -132,6 +178,74 @@ public class MainActivity extends AppCompatActivity {
         ColorStateList oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
         Log.d(LOG_TAG, oldColors+ "-------" + oldColors_background);
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
+
+        // заполняем коллекцию групп из массива с названиями групп
+        groupData = new ArrayList<Map<String, String>>();
+        for (String group : groups) {
+            // заполняем список атрибутов для каждой группы
+            m = new HashMap<String, String>();
+            m.put("groupName", group); // имя компании
+            groupData.add(m);
+        }
+
+        // список атрибутов групп для чтения
+        String groupFrom[] = new String[] {"groupName"};
+        // список ID view-элементов, в которые будет помещены атрибуты групп
+        int groupTo[] = new int[] {android.R.id.text1};
+
+
+        // создаем коллекцию для коллекций элементов
+        childData = new ArrayList<ArrayList<Map<String, String>>>();
+
+        // создаем коллекцию элементов для первой группы
+        childDataItem = new ArrayList<Map<String, String>>();
+        // заполняем список атрибутов для каждого элемента
+        for (String phone : phonesHTC) {
+            m = new HashMap<String, String>();
+            m.put("phoneName", phone); // название телефона
+            childDataItem.add(m);
+        }
+        // добавляем в коллекцию коллекций
+        childData.add(childDataItem);
+
+        // создаем коллекцию элементов для второй группы
+        childDataItem = new ArrayList<Map<String, String>>();
+        for (String phone : phonesSams) {
+            m = new HashMap<String, String>();
+            m.put("phoneName", phone);
+            childDataItem.add(m);
+        }
+        childData.add(childDataItem);
+
+        // создаем коллекцию элементов для третьей группы
+        childDataItem = new ArrayList<Map<String, String>>();
+        for (String phone : phonesLG) {
+            m = new HashMap<String, String>();
+            m.put("phoneName", phone);
+            childDataItem.add(m);
+        }
+        childData.add(childDataItem);
+
+        // список атрибутов элементов для чтения
+        String childFrom[] = new String[] {"phoneName"};
+        // список ID view-элементов, в которые будет помещены атрибуты элементов
+        int childTo[] = new int[] {android.R.id.text1};
+
+        SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
+                this,
+                groupData,
+                android.R.layout.simple_expandable_list_item_1,
+                groupFrom,
+                groupTo,
+                childData,
+                android.R.layout.simple_list_item_1,
+                childFrom,
+                childTo);
+
+        elvMain = (ExpandableListView) findViewById(R.id.elvMain);
+        elvMain.setAdapter(adapter);
+
+
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -169,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void afterTextChanged(Editable s) {
             int len = s.length();
+            Log.d(LOG_TAG,  "-------" + len);
             if (len > 0) {
                 if (len != 5) {
                     StringBuffer strBuff = new StringBuffer();
