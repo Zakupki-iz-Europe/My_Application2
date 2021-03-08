@@ -137,26 +137,27 @@
 <!--                    android:layout_height="0dp"-->
 <!--                    android:layout_weight="10"-->
 <!--                    android:layout_gravity="center"/>-->
-        <LinearLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="5"
-            android:orientation="vertical">
+<!--        <LinearLayout-->
+<!--            xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--            android:layout_width="fill_parent"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:layout_weight="10"-->
+<!--            android:orientation="vertical">-->
+<!--            <ExpandableListView-->
+<!--                android:id="@+id/elvMain"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--            />-->
             <ExpandableListView
-                android:id="@+id/elvMain"
+                android:id="@+id/exListView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            </ExpandableListView>
-        </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:id="@+id/rvAnimals"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="5"/>
+                android:layout_height="0dp"
+                android:layout_weight="10"
+                android:indicatorLeft="250dp"
+                android:indicatorRight="300dp"
+                />
+<!--        </LinearLayout>-->
 
         <Button
                     android:layout_width="wrap_content"

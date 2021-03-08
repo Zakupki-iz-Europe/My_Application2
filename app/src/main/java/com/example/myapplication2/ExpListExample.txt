@@ -1,0 +1,66 @@
+// из MainActivity.java
+        // заполняем коллекцию групп из массива с названиями групп
+        groupData = new ArrayList<Map<String, String>>();
+        for (String group : groups) {
+            // заполняем список атрибутов для каждой группы
+            m = new HashMap<String, String>();
+            m.put("groupName", group); // имя компании
+            groupData.add(m);
+        }
+
+        // список атрибутов групп для чтения
+        String groupFrom[] = new String[] {"groupName"};
+        // список ID view-элементов, в которые будет помещены атрибуты групп
+        int groupTo[] = new int[] {android.R.id.text1};
+
+
+        // создаем коллекцию для коллекций элементов
+        childData = new ArrayList<ArrayList<Map<String, String>>>();
+
+        // создаем коллекцию элементов для первой группы
+        childDataItem = new ArrayList<Map<String, String>>();
+        // заполняем список атрибутов для каждого элемента
+        for (String phone : phonesHTC) {
+            m = new HashMap<String, String>();
+            m.put("phoneName", phone); // название телефона
+            childDataItem.add(m);
+        }
+        // добавляем в коллекцию коллекций
+        childData.add(childDataItem);
+
+        // создаем коллекцию элементов для второй группы
+        childDataItem = new ArrayList<Map<String, String>>();
+        for (String phone : phonesSams) {
+            m = new HashMap<String, String>();
+            m.put("phoneName", phone);
+            childDataItem.add(m);
+        }
+        childData.add(childDataItem);
+
+        // создаем коллекцию элементов для третьей группы
+        childDataItem = new ArrayList<Map<String, String>>();
+        for (String phone : phonesLG) {
+            m = new HashMap<String, String>();
+            m.put("phoneName", phone);
+            childDataItem.add(m);
+        }
+        childData.add(childDataItem);
+
+        // список атрибутов элементов для чтения
+        String childFrom[] = new String[] {"phoneName"};
+        // список ID view-элементов, в которые будет помещены атрибуты элементов
+        int childTo[] = new int[] {android.R.id.text1};
+
+        SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
+                this,
+                groupData,
+                android.R.layout.simple_expandable_list_item_1,
+                groupFrom,
+                groupTo,
+                childData,
+                android.R.layout.simple_list_item_1,
+                childFrom,
+                childTo);
+
+        elvMain = (ExpandableListView) findViewById(R.id.elvMain);
+        elvMain.setAdapter(adapter);

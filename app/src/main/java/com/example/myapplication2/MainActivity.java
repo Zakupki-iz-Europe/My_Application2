@@ -1,9 +1,6 @@
 package com.example.myapplication2;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,9 +26,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.RadioButton;
-//import MyRecyclerViewAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.myapplication2.sqlite.DatabaseHelper;
@@ -55,7 +50,9 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 
-public class MainActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity  {
+
+//    -------------------------начало списка1------------------
     //https://github.com/ravi8x/AndroidSQLite.git
     // названия компаний (групп)
     String[] groups = new String[] {"HTC", "Samsung", "LG"};
@@ -79,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     Map<String, String> m;
 
     ExpandableListView elvMain;
+    //----------------------------------конец списка1-------------------
+
+
+
     private final static String FILE_NAME = "content.txt";
     private final static String NULLI = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
@@ -130,36 +131,12 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
     }
 
 
-        MyRecyclerViewAdapter adapter;
-
-        @Override
-        public void onItemClick(View view, int position) {
-            Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
-        }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // data to populate the RecyclerView with
-        ArrayList<String> animalNames = new ArrayList<>();
-        animalNames.add("Horse");
-        animalNames.add("Cow");
-        animalNames.add("Camel");
-        animalNames.add("Sheep");
-        animalNames.add("Goat");
-
-        // set up the RecyclerView
-        LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        RecyclerView recyclerView = findViewById(R.id.rvAnimals);
-        recyclerView.setLayoutManager(layoutManager);
-
-        adapter = new MyRecyclerViewAdapter(this, animalNames);
-        adapter.setClickListener(this);
-        recyclerView.setAdapter(adapter);
 
         db = new DatabaseHelper(this);
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
@@ -179,71 +156,30 @@ public class MainActivity extends AppCompatActivity implements MyRecyclerViewAda
         Log.d(LOG_TAG, oldColors+ "-------" + oldColors_background);
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
 
-        // заполняем коллекцию групп из массива с названиями групп
-        groupData = new ArrayList<Map<String, String>>();
-        for (String group : groups) {
-            // заполняем список атрибутов для каждой группы
-            m = new HashMap<String, String>();
-            m.put("groupName", group); // имя компании
-            groupData.add(m);
-        }
-
-        // список атрибутов групп для чтения
-        String groupFrom[] = new String[] {"groupName"};
-        // список ID view-элементов, в которые будет помещены атрибуты групп
-        int groupTo[] = new int[] {android.R.id.text1};
 
 
-        // создаем коллекцию для коллекций элементов
-        childData = new ArrayList<ArrayList<Map<String, String>>>();
+        // Находим наш list
+        ExpandableListView listView = (ExpandableListView)findViewById(R.id.exListView);
 
-        // создаем коллекцию элементов для первой группы
-        childDataItem = new ArrayList<Map<String, String>>();
-        // заполняем список атрибутов для каждого элемента
-        for (String phone : phonesHTC) {
-            m = new HashMap<String, String>();
-            m.put("phoneName", phone); // название телефона
-            childDataItem.add(m);
-        }
-        // добавляем в коллекцию коллекций
-        childData.add(childDataItem);
+        //Создаем набор данных для адаптера
+        ArrayList<ArrayList<String>> groups = new ArrayList<ArrayList<String>>();
 
-        // создаем коллекцию элементов для второй группы
-        childDataItem = new ArrayList<Map<String, String>>();
-        for (String phone : phonesSams) {
-            m = new HashMap<String, String>();
-            m.put("phoneName", phone);
-            childDataItem.add(m);
-        }
-        childData.add(childDataItem);
+        ArrayList<String> children1 = new ArrayList<String>();
+        ArrayList<String> children2 = new ArrayList<String>();
 
-        // создаем коллекцию элементов для третьей группы
-        childDataItem = new ArrayList<Map<String, String>>();
-        for (String phone : phonesLG) {
-            m = new HashMap<String, String>();
-            m.put("phoneName", phone);
-            childDataItem.add(m);
-        }
-        childData.add(childDataItem);
+        children1.add("Child_1");
+        children1.add("Child_2");
+        groups.add(children1);
 
-        // список атрибутов элементов для чтения
-        String childFrom[] = new String[] {"phoneName"};
-        // список ID view-элементов, в которые будет помещены атрибуты элементов
-        int childTo[] = new int[] {android.R.id.text1};
+        children2.add("Child_1");
+        children2.add("Child_2");
+        children2.add("Child_3");
+        groups.add(children2);
 
-        SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
-                this,
-                groupData,
-                android.R.layout.simple_expandable_list_item_1,
-                groupFrom,
-                groupTo,
-                childData,
-                android.R.layout.simple_list_item_1,
-                childFrom,
-                childTo);
+        //Создаем адаптер и передаем context и список с данными
+        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db);
+        listView.setAdapter(adapter2);
 
-        elvMain = (ExpandableListView) findViewById(R.id.elvMain);
-        elvMain.setAdapter(adapter);
 
 
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
