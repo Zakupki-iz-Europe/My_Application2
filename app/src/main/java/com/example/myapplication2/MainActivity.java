@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity  {
             byte[] bytes = new byte[fin.available()];
             fin.read(bytes);
             String text = new String(bytes);
-            tv_open_text.setText(text);
+//            tv_open_text.setText(text);
         } catch (IOException ex) {
 
             Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
@@ -380,7 +380,7 @@ public class MainActivity extends AppCompatActivity  {
         try {
             Log.d(LOG_TAG, "--- Clear mytable: ---");
             deleteFile(FILE_NAME);
-            tv_open_text.setText(null);
+//            tv_open_text.setText(null);
             db.deleteAllNotes();
             clearField();
         } finally {

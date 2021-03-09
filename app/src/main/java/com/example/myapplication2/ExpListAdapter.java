@@ -21,9 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ExpListAdapter extends BaseExpandableListAdapter {
-
-    private ArrayList<Map<String,Double>> mGroups;
-    private ArrayList<String> mDays;
+    private ArrayList<Map<String,Double>> mGroups = new ArrayList<Map<String,Double>>();
+    private ArrayList<String> mDays = new ArrayList<>();
     private Context mContext;
     private DatabaseHelper db;
 
@@ -31,16 +30,23 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
         mContext = context;
         Map<String,Double> map = new HashMap<>();
         List<Note> notes = db.getAllNotes();
-        for (int i = 0; i < db.getNotesCount(); i++) {
-            mDays.add(notes.get(i).getData());
-            map.put(notes.get(i).getZak(), notes.get(i).getChas());
+        if (db.getNotesCount() > 0) {
+            for (int i = 0; i < db.getNotesCount(); i++) {
+                mDays.add(notes.get(i).getData());
+                map.put(notes.get(i).getZak(), notes.get(i).getChas());
+            }
         }
-            mGroups.add(map);
+        else {
+            mDays.add("Нет даты");
+            map.put("Нет заказов", (double) 0);
+        }
+        mGroups.add(map);
     }
+
 
     @Override
     public int getGroupCount() {
-        return mGroups.size();
+        return mDays.size();
     }
 
     @Override
@@ -90,7 +96,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
         }
 
         TextView textGroup = (TextView) convertView.findViewById(R.id.textGroup);
-        textGroup.setText("Group " + Integer.toString(groupPosition));
+        textGroup.setText(mDays.get(groupPosition));
 
         return convertView;
 
