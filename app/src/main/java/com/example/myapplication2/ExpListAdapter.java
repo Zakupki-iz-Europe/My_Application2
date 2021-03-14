@@ -22,51 +22,57 @@ import java.util.List;
 import java.util.Map;
 
 public class ExpListAdapter extends BaseExpandableListAdapter {
-    private ArrayList<Map<String,Long>> mGroups = new ArrayList<Map<String, Long>>();
-    private ArrayList<String> mDays = new ArrayList<>();
+    private final ArrayList<Map<String,Double>> mGroups = new ArrayList<Map<String, Double>>();
+    private final ArrayList<String> mDays = new ArrayList<>();
     private final Context mContext;
     private final SQLiteDatabase mydb;
     private final String LOG_TAG = "List";
 
-    public ExpListAdapter (Context context, DatabaseHelper db){
-        mydb = db.getReadableDatabase();
+    public ExpListAdapter (Context context, SQLiteDatabase db){
+        mydb = db;
         mContext = context;
         String str = "";
-        int indexGroup = 0;
-        Map<String,Long> map = new HashMap<>();
+        int index = 0;
 
-//        List<Note> notes = db.getAllNotes();
         String selectQuery = "SELECT  DISTINCT " +  Note.COLUMN_DATE + " FROM " + Note.TABLE_NAME;
 
-//        SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = mydb.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do { // дергаем каждый день
+                Map<String,Double> map = new HashMap<>();
                 str = cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE));
                 mDays.add(str);
-                indexGroup++;
-//                mGroups.add(indexGroup,new ArrayList<>());
+                Log.d(LOG_TAG, "-------" + str);
 //               а теперь определим сколько заказов было за этот день
                 selectQuery = "SELECT " +  Note.COLUMN_ZAK + "," + Note.COLUMN_CHAS +
                         " FROM " + Note.TABLE_NAME + " WHERE " + Note.COLUMN_DATE +
-                        " = '" + mDays.get(cursor.getColumnIndex(Note.COLUMN_DATE)) + "'";
+                        " = '" + str + "'";
                 Cursor curNotes = mydb.rawQuery(selectQuery, null);
                 if (curNotes.moveToFirst()) {
                     do {
+
                         map.put(curNotes.getString(curNotes.getColumnIndex(Note.COLUMN_ZAK)),
-                                curNotes.getLong(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
-                        } while (curNotes.moveToNext());
+                                curNotes.getDouble(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
+                        Log.d(LOG_TAG, curNotes.getString(curNotes.getColumnIndex(Note.COLUMN_ZAK)) + "-------" + curNotes.getDouble(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
+
+                    } while (curNotes.moveToNext());
+                    Log.d(LOG_TAG, map + "-----------map----------");
                 }
                 mGroups.add(map);
-
+                index++;
+                curNotes.close();
             } while (cursor.moveToNext());
         }
         else {
+            Map<String,Double> map = new HashMap<>();
             mDays.add("Нет даты");
-            map.put("Нет заказов", (long) 0);
+            map.put("Нет заказов", (double) 0);
             mGroups.add(map);}
+        cursor.close();
+        Log.d(LOG_TAG, mGroups + "-------" );
+
     }
 
 
@@ -138,19 +144,21 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
         TextView textChild = (TextView) convertView.findViewById(R.id.textChild);
 
         if (textChild != null) {
-            Iterator<Map.Entry<String, Long>> itr = mGroups.get(groupPosition).entrySet().iterator();
+            String zak_nar = "";
+            Iterator<Map.Entry<String, Double>> itr = mGroups.get(groupPosition).entrySet().iterator();
             if (itr.hasNext()) {
-                Map.Entry<String, Long> entry = itr.next();
+                Map.Entry<String, Double> entry = itr.next();
                 // get key
-                String zak_nar = entry.getKey();
-                Long chasy = entry.getValue();
+                zak_nar = entry.getKey();
+                Double chasy = entry.getValue();
                 zak_nar = zak_nar + " " + chasy.toString();
-                Log.d(LOG_TAG, itr.toString() + "-------" + zak_nar);
+//                Log.d(LOG_TAG, itr.toString() + "-------" + zak_nar);
+                Log.d(LOG_TAG, mGroups.get(groupPosition).entrySet() + "-------" + zak_nar);
 
                 textChild.setText(zak_nar);
             }
+
         }
-        //
 //        Button button = (Button)convertView.findViewById(R.id.buttonChild);
 //        button.setOnClickListener(new View.OnClickListener() {
 //            @Override

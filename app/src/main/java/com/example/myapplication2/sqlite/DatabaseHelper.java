@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long insertNote(Note note) {
+    public void insertNote(Note note) {
         // get writable database as we want to write data
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -55,13 +55,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(Note.COLUMN_CHAS, note.getChas());
 
         // insert row
-        long id = db.insert(Note.TABLE_NAME, null, values);
+        db.insert(Note.TABLE_NAME, null, values);
 
         // close db connection
         db.close();
 
         // return newly inserted row id
-        return id;
     }
 
     public Note getNote(long id) {
@@ -73,15 +72,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Note.COLUMN_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
 
-        if (cursor != null)
+        if (cursor != null) {
             cursor.moveToFirst();
+        }
 
         // prepare note object
         Note note = new Note(
                 cursor.getInt(cursor.getColumnIndex(Note.COLUMN_ID)),
                 cursor.getString(cursor.getColumnIndex(Note.COLUMN_ZAK)),
                 cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE)),
-                cursor.getLong(cursor.getColumnIndex(Note.COLUMN_CHAS))
+                cursor.getDouble(cursor.getColumnIndex(Note.COLUMN_CHAS))
         );
 
         // close the db connection
@@ -107,7 +107,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 note.setId(cursor.getInt(cursor.getColumnIndex(Note.COLUMN_ID)));
                 note.setZak(cursor.getString(cursor.getColumnIndex(Note.COLUMN_ZAK)));
                 note.setData(cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE)));
-                note.setChas(cursor.getLong(cursor.getColumnIndex(Note.COLUMN_CHAS)));
+                note.setChas(cursor.getDouble(cursor.getColumnIndex(Note.COLUMN_CHAS)));
 
                 notes.add(note);
             } while (cursor.moveToNext());

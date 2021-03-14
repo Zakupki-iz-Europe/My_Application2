@@ -1,19 +1,13 @@
 package com.example.myapplication2;
 
 import androidx.appcompat.app.AppCompatActivity;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import android.os.Bundle;
 import android.widget.ExpandableListView;
-import android.widget.SimpleExpandableListAdapter;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -54,34 +48,12 @@ public class MainActivity extends AppCompatActivity  {
 
 //    -------------------------начало списка1------------------
     //https://github.com/ravi8x/AndroidSQLite.git
-    // названия компаний (групп)
-    String[] groups = new String[] {"HTC", "Samsung", "LG"};
-
-    // названия телефонов (элементов)
-    String[] phonesHTC = new String[] {"Sensation", "Desire", "Wildfire", "Hero"};
-    String[] phonesSams = new String[] {"Galaxy S II", "Galaxy Nexus", "Wave"};
-    String[] phonesLG = new String[] {"Optimus", "Optimus Link", "Optimus Black", "Optimus One"};
-
-    // коллекция для групп
-    ArrayList<Map<String, String>> groupData;
-
-    // коллекция для элементов одной группы
-    ArrayList<Map<String, String>> childDataItem;
-
-    // общая коллекция для коллекций элементов
-    ArrayList<ArrayList<Map<String, String>>> childData;
-    // в итоге получится childData = ArrayList<childDataItem>
-
-    // список атрибутов группы или элемента
-    Map<String, String> m;
-
-    ExpandableListView elvMain;
     //----------------------------------конец списка1-------------------
 
 
 
     private final static String FILE_NAME = "content.txt";
-    private final static String NULLI = "00,00";
+    private final static String NULLS = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
     int len_zakaz_naryad = 5;
     char razdelitel = ',';
@@ -104,34 +76,6 @@ public class MainActivity extends AppCompatActivity  {
         if (str.indexOf(razdelitel) > 0)  endStr = str.substring(0,str.lastIndexOf(razdelitel) - 2);
         tv_raboty.setText(endStr);
     }
-
-
-    class DBHelper extends SQLiteOpenHelper {
-
-        public DBHelper(Context context) {
-            // конструктор суперкласса
-            super(context, "myDB", null, 1);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            Log.d(LOG_TAG, "--- onCreate database ---");
-            // создаем таблицу с полями
-            db.execSQL("create table mytable ("
-                    + "id integer primary key autoincrement,"
-                    + "Дата text, "
-                    + "Заказ_наряд text, "
-                    + "Часы long" + ");");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        }
-    }
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,23 +105,8 @@ public class MainActivity extends AppCompatActivity  {
         // Находим наш list
         ExpandableListView listView = (ExpandableListView)findViewById(R.id.exListView);
 
-        //Создаем набор данных для адаптера
-        ArrayList<ArrayList<String>> groups = new ArrayList<ArrayList<String>>();
-
-        ArrayList<String> children1 = new ArrayList<String>();
-        ArrayList<String> children2 = new ArrayList<String>();
-
-        children1.add("Child_1");
-        children1.add("Child_2");
-        groups.add(children1);
-
-        children2.add("Child_1");
-        children2.add("Child_2");
-        children2.add("Child_3");
-        groups.add(children2);
-
-        //Создаем адаптер и передаем context и список с данными
-        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db);
+         //Создаем адаптер и передаем context и список с данными
+        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db.getReadableDatabase());
         listView.setAdapter(adapter2);
 
 
@@ -222,7 +151,7 @@ public class MainActivity extends AppCompatActivity  {
             Log.d(LOG_TAG,  "-------" + len);
             if (len > 0) {
                 if (len != 5) {
-                    StringBuffer strBuff = new StringBuffer();
+                    StringBuilder strBuff = new StringBuilder();
                     char c;
                     double chas;
                     String strng;
@@ -240,7 +169,7 @@ public class MainActivity extends AppCompatActivity  {
                     chas = Double.parseDouble(strng);
                     chas = chas/100;
                     DecimalFormat formater = new DecimalFormat("00.00");
-                        if (chas==0) strng = NULLI; else strng = formater.format(chas);
+                        if (chas==0) strng = NULLS; else strng = formater.format(chas);
                     Log.d(LOG_TAG, strng+ "-------" + chas);
                     s.replace(0,s.length(),strng);
                 }
@@ -259,11 +188,11 @@ public class MainActivity extends AppCompatActivity  {
     public void addJob(View view) {
         String raboty = tv_raboty.getText().toString();
         String chasyki = et_normo_chasy.getText().toString();
-        Log.d(LOG_TAG, chasyki + "-------" + NULLI);
-        if (!chasyki.equals(NULLI)) {
+        Log.d(LOG_TAG, chasyki + "-------" + NULLS);
+        if (!chasyki.equals(NULLS)) {
             String firstJob = raboty + chasyki;
-            et_normo_chasy.setText(NULLI);
-            et_normo_chasy.setSelection(NULLI.length());
+            et_normo_chasy.setText(NULLS);
+            et_normo_chasy.setSelection(NULLS.length());
             firstJob = firstJob + " + ";
             tv_raboty.setText(firstJob);
         }
@@ -297,23 +226,11 @@ public class MainActivity extends AppCompatActivity  {
                 Log.d(LOG_TAG, chasy);
                 chasy=chasy.replaceAll(",", ".");
 
-//                Scanner sc = new Scanner(chasy);
-//                Log.d(LOG_TAG, chasy + sc.hasNextDouble()+sc.hasNextInt() + sc.hasNextShort() + sc.hasNextFloat() +sc.next());
-//                 if (sc.hasNextDouble()) {
-//                     while (sc.hasNext()) {
-//                         if (sc.hasNextDouble())
-//                             int_chasy += sc.nextDouble();
-//                    Log.d(LOG_TAG, "дубле  " + sc.hasNextDouble() +
-//                            "int    " + sc.hasNextInt() +
-//                            "str    " + sc.hasNextLine());
-//                     }
-//                 }
                 String[] summa_chasov = chasy.split(" "); // делю строку любыми символами кроме цифр
                 for (int i = 0; i < summa_chasov.length; i++) {
                     Log.d(LOG_TAG, summa_chasov[i]);
                     if (summa_chasov[i].contains(".")) int_chasy += Double.parseDouble(summa_chasov[i]);
                 }
-//                sc.close();
                 note.setChas(int_chasy);
 
                 text = text + note.getChas() + "н/ч\r\n";
@@ -400,7 +317,7 @@ public class MainActivity extends AppCompatActivity  {
     public void clearField() {
         et_zakaz_naryad.setText("");
         et_zakaz_naryad.requestFocus();
-        et_normo_chasy.setText(NULLI);
+        et_normo_chasy.setText(NULLS);
         tv_raboty.setText(VSEGO_CHASOV);
         rbZN.setChecked(TRUE);
         len_zakaz_naryad = 5;
