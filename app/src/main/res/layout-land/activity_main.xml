@@ -11,7 +11,7 @@
             android:id="@+id/header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
+            android:textSize="16sp"
             android:layout_gravity="center"/>
 
         <View
@@ -24,7 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:gravity="bottom">
+            android:gravity="bottom"
+            android:baselineAligned="false">
 
 
             <LinearLayout
@@ -32,11 +33,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_gravity="left">
+            android:layout_gravity="start">
 
             <RadioGroup
                 android:layout_width="wrap_content"
-
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_gravity="center">
@@ -48,7 +48,7 @@
                     android:layout_weight="1"
                     android:text="@string/_36"
                     android:checked="true"
-                    android:textSize="16dp"
+                    android:textSize="16sp"
 
                     android:onClick="set_long_len"/>
 
@@ -58,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/_116"
-                    android:textSize="16dp"
+                    android:textSize="16sp"
 
                     android:onClick="set_short_len"/>
             </RadioGroup>
@@ -68,15 +68,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="1"
                 android:gravity="start"
-                android:hint="Номер заказ-наряда"
-                android:inputType="number" />
+                android:hint="@string/zak_nom"
+                android:inputType="number"
+                android:importantForAutofill="no" />
             <TextView
                 android:id="@+id/tv_chasy"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:onClick="delText"
                 android:text="@string/vsego_chasov" />
 
@@ -84,7 +83,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="1"
                 android:gravity="start"
                 android:orientation="horizontal">
 
@@ -94,10 +92,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="00,00"
+                    android:text="@string/_00_00"
                     android:inputType="numberDecimal"
                     android:digits="1234567890.,"
-                    />
+                    android:importantForAutofill="no"
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/but_plus"
@@ -105,7 +104,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="Добавить" />
+                    android:text="@string/add" />
 
             </LinearLayout>
 
@@ -114,42 +113,37 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="1"
-                android:textSize="16dp"
+                android:textSize="16sp"
                 android:onClick="setDate"/>
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_gravity="center_horizontal"
                 android:onClick="saveText"
-                android:text="Сохранить"/>
+                android:text="@string/save"/>
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height= "match_parent"
-                android:orientation="vertical"
-                android:layout_weight="2"
-                android:layout_gravity="right">
-                <TextView
-                    android:id="@+id/open_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="3"
-                    android:layout_gravity="center"/>
-
-
-                    <Button
+                <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="clearText"
                     android:layout_margin="8dp"
-                    android:layout_gravity="end"
+                    android:layout_gravity="bottom"
                     android:textSize="12sp"
                     android:text="@string/del_strings" />
+
             </LinearLayout>
+
+
+                <ExpandableListView
+                    android:id="@+id/exListView"
+                    android:layout_width="0dp"
+                    android:layout_height= "match_parent"
+                    android:layout_weight="2"
+                    android:layout_gravity="end"
+                    android:indicatorLeft="250dp"
+                    android:indicatorRight="300dp"
+                    />
+
         </LinearLayout>
 
     </LinearLayout>

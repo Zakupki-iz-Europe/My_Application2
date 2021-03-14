@@ -11,7 +11,7 @@
             android:id="@+id/header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
+            android:textSize="16sp"
             android:layout_gravity="center"/>
 
         <View
@@ -44,10 +44,10 @@
                         android:id="@+id/radioButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+
                         android:text="@string/_36"
                         android:checked="true"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
 
                         android:onClick="set_long_len"/>
 
@@ -55,9 +55,9 @@
                         android:id="@+id/radioButton2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+
                         android:text="@string/_116"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
 
                         android:onClick="set_short_len"/>
                 </RadioGroup>
@@ -67,15 +67,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="1"
+
                     android:gravity="start"
-                    android:hint="Номер заказ-наряда"
-                    android:inputType="number" />
+                    android:hint="@string/zak_nom"
+                    android:inputType="number"
+                    android:importantForAutofill="no" />
                 <TextView
                     android:id="@+id/tv_chasy"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+
                     android:onClick="delText"
                     android:text="@string/vsego_chasov" />
 
@@ -83,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="1"
+
                     android:orientation="horizontal">
 
 
@@ -92,10 +93,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="00.00"
+                        android:text="@string/_00_00"
                         android:inputType="numberDecimal"
                         android:digits="1234567890.,"
-                        />
+                        android:autofillHints="@string/_00_00"
+                        tools:ignore="LabelFor" />
 
                     <Button
                         android:id="@+id/but_plus"
@@ -103,7 +105,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Добавить" />
+                        android:text="@string/add" />
 
                 </LinearLayout>
 
@@ -112,16 +114,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:textSize="16dp"
+
+                    android:textSize="16sp"
                     android:onClick="setDate"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+
                     android:layout_gravity="center"
                     android:onClick="saveText"
-                    android:text="Сохранить"/>
+                    android:text="@string/save"/>
 
 <!--            </LinearLayout>-->
 

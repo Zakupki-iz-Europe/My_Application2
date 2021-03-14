@@ -15,6 +15,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.example.myapplication2.sqlite.DatabaseHelper;
 import com.example.myapplication2.sqlite.Note;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,55 +23,63 @@ import java.util.List;
 import java.util.Map;
 
 public class ExpListAdapter extends BaseExpandableListAdapter {
-    private final ArrayList<Map<String,Double>> mGroups = new ArrayList<Map<String, Double>>();
-    private final ArrayList<String> mDays = new ArrayList<>();
+    private final ArrayList<ArrayList<Note>> mGroups = new ArrayList<ArrayList<Note>>();
+    private ArrayList<String> mDays;
     private final Context mContext;
     private final SQLiteDatabase mydb;
     private final String LOG_TAG = "List";
+    private  final ArrayList<Note> notes = new ArrayList<Note>();
 
-    public ExpListAdapter (Context context, SQLiteDatabase db){
-        mydb = db;
+    public ExpListAdapter (Context context, DatabaseHelper db){
+        List<Note> notes = db.getAllNotes();
+        mydb = db.getReadableDatabase();
         mContext = context;
         String str = "";
         int index = 0;
 
-        String selectQuery = "SELECT  DISTINCT " +  Note.COLUMN_DATE + " FROM " + Note.TABLE_NAME;
+        mDays = db.distinct(Note.COLUMN_DATE);
+        if (mDays != null){
+            for(String data:mDays){
+               mGroups.add(db.where(Note.COLUMN_DATE, data));
+            }
 
-        Cursor cursor = mydb.rawQuery(selectQuery, null);
-
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do { // дергаем каждый день
-                Map<String,Double> map = new HashMap<>();
-                str = cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE));
-                mDays.add(str);
-                Log.d(LOG_TAG, "-------" + str);
-//               а теперь определим сколько заказов было за этот день
-                selectQuery = "SELECT " +  Note.COLUMN_ZAK + "," + Note.COLUMN_CHAS +
-                        " FROM " + Note.TABLE_NAME + " WHERE " + Note.COLUMN_DATE +
-                        " = '" + str + "'";
-                Cursor curNotes = mydb.rawQuery(selectQuery, null);
-                if (curNotes.moveToFirst()) {
-                    do {
-
-                        map.put(curNotes.getString(curNotes.getColumnIndex(Note.COLUMN_ZAK)),
-                                curNotes.getDouble(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
-                        Log.d(LOG_TAG, curNotes.getString(curNotes.getColumnIndex(Note.COLUMN_ZAK)) + "-------" + curNotes.getDouble(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
-
-                    } while (curNotes.moveToNext());
-                    Log.d(LOG_TAG, map + "-----------map----------");
-                }
-                mGroups.add(map);
-                index++;
-                curNotes.close();
-            } while (cursor.moveToNext());
+//        String selectQuery = "SELECT  DISTINCT " +  Note.COLUMN_DATE + " FROM " + Note.TABLE_NAME;
+//
+//        Cursor cursor = mydb.rawQuery(selectQuery, null);
+//
+//        // looping through all rows and adding to list
+//        if (cursor.moveToFirst()) {
+//            do { // дергаем каждый день
+////                Map<String,Double> map = new HashMap<>();
+//                str = cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE));
+//                mDays.add(str);
+//                Log.d(LOG_TAG, "-------" + str);
+////               а теперь определим сколько заказов было за этот день
+//                selectQuery = "SELECT " +  Note.COLUMN_ZAK + "," + Note.COLUMN_CHAS +
+//                        " FROM " + Note.TABLE_NAME + " WHERE " + Note.COLUMN_DATE +
+//                        " = '" + str + "'";
+//                Cursor curNotes = mydb.rawQuery(selectQuery, null);
+//                if (curNotes.moveToFirst()) {
+//                    do {
+//
+//                        map.put(curNotes.getString(curNotes.getColumnIndex(Note.COLUMN_ZAK)),
+//                                curNotes.getDouble(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
+//                        Log.d(LOG_TAG, curNotes.getString(curNotes.getColumnIndex(Note.COLUMN_ZAK)) + "-------" + curNotes.getDouble(curNotes.getColumnIndex(Note.COLUMN_CHAS)));
+//
+//                    } while (curNotes.moveToNext());
+//                    Log.d(LOG_TAG, map + "-----------map----------");
+//                }
+//                mGroups.add(map);
+//                index++;
+//                curNotes.close();
+//            } while (cursor.moveToNext());
         }
         else {
-            Map<String,Double> map = new HashMap<>();
+//            Map<String,Double> map = new HashMap<>();
             mDays.add("Нет даты");
-            map.put("Нет заказов", (double) 0);
-            mGroups.add(map);}
-        cursor.close();
+//            map.put("Нет заказов", (double) 0);
+            mGroups.add(new ArrayList<>());}
+//        cursor.close();
         Log.d(LOG_TAG, mGroups + "-------" );
 
     }
@@ -142,32 +151,19 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.child_view, null);
         }
         TextView textChild = (TextView) convertView.findViewById(R.id.textChild);
+        TextView textChasy = (TextView) convertView.findViewById(R.id.textChasy);
 
-        if (textChild != null) {
+        if (textChild != null && textChasy != null ) {
             String zak_nar = "";
-            Iterator<Map.Entry<String, Double>> itr = mGroups.get(groupPosition).entrySet().iterator();
-            if (itr.hasNext()) {
-                Map.Entry<String, Double> entry = itr.next();
-                // get key
-                zak_nar = entry.getKey();
-                Double chasy = entry.getValue();
-                zak_nar = zak_nar + " " + chasy.toString();
-//                Log.d(LOG_TAG, itr.toString() + "-------" + zak_nar);
-                Log.d(LOG_TAG, mGroups.get(groupPosition).entrySet() + "-------" + zak_nar);
+                zak_nar = mGroups.get(groupPosition).get(childPosition).getZak();
+                Double chasy = mGroups.get(groupPosition).get(childPosition).getChas();
 
                 textChild.setText(zak_nar);
-            }
-
+                zak_nar = chasy.toString();
+                textChasy.setText(zak_nar);
         }
-//        Button button = (Button)convertView.findViewById(R.id.buttonChild);
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Toast.makeText(mContext,"button is pressed",Toast.LENGTH_LONG).show();
-//            }
-//        });
 
-        return convertView;
+       return convertView;
     }
 
     @Override

@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">My Application2.1</string>
+    <string name="app_name">Заказ-наряды</string>
     <string name="_36">ЗН-36</string>
     <string name="_116">ЗНППП-116</string>
-    <string name="save_text">Сохранить</string>
-    <string name="zn_number">Номер заказ-наряда</string>
-    <string name="zag2">ЗНППП-116</string>
-    <string name="zag1">ЗН-36</string>
     <string name="del_strings">Удалить \nвсе записи</string>
     <string name="vsego_chasov">Всего часов:</string>
+    <string name="_00_00">00.00</string>
+    <string name="zak_nom">Номер заказ-наряда</string>
+    <string name="save">Сохранить</string>
+    <string name="add">Добавить</string>
 </resources>

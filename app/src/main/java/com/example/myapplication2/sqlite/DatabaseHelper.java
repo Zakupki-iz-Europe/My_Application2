@@ -63,6 +63,57 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // return newly inserted row id
     }
 
+    public ArrayList<String> distinct(String colName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        ArrayList<String> notes = new ArrayList<>();
+        String selectQuery = "SELECT DISTINCT " + colName  + " FROM " + Note.TABLE_NAME;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                notes.add(cursor.getString(cursor.getColumnIndex(colName)));
+            } while (cursor.moveToNext());
+        }
+
+        // close db connection
+        db.close();
+
+        // return notes list
+        return notes;
+
+    }
+
+    public ArrayList<Note> where(String colName, String value) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        ArrayList<Note> notes = new ArrayList<>();
+        String selectQuery = "SELECT * FROM "  + Note.TABLE_NAME +
+                " WHERE " + colName + " = '" + value + "'";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Note note = new Note();
+                note.setId(cursor.getInt(cursor.getColumnIndex(Note.COLUMN_ID)));
+                note.setZak(cursor.getString(cursor.getColumnIndex(Note.COLUMN_ZAK)));
+                note.setData(cursor.getString(cursor.getColumnIndex(Note.COLUMN_DATE)));
+                note.setChas(cursor.getDouble(cursor.getColumnIndex(Note.COLUMN_CHAS)));
+
+                notes.add(note);
+            } while (cursor.moveToNext());
+        }
+
+        // close db connection
+        db.close();
+
+        // return notes list
+        return notes;
+
+    }
+
     public Note getNote(long id) {
         // get readable database as we are not inserting anything
         SQLiteDatabase db = this.getReadableDatabase();

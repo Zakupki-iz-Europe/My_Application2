@@ -88,7 +88,6 @@ public class MainActivity extends AppCompatActivity  {
         et_data = findViewById(R.id.currentDateTime);
         rbZN = findViewById(R.id.radioButton);
         rbZNPP = findViewById(R.id.radioButton2);
-        tv_open_text = (TextView) findViewById(R.id.open_text);
         tv_header = (TextView) findViewById(R.id.header);
         tv_raboty = (TextView) findViewById(R.id.tv_chasy);
        // listView =findViewById(R.id.list_v);
@@ -106,7 +105,7 @@ public class MainActivity extends AppCompatActivity  {
         ExpandableListView listView = (ExpandableListView)findViewById(R.id.exListView);
 
          //Создаем адаптер и передаем context и список с данными
-        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db.getReadableDatabase());
+        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
         listView.setAdapter(adapter2);
 
 
