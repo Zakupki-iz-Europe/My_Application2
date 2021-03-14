@@ -1,6 +1,9 @@
 package com.example.myapplication2;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity  {
             et_data,
             tv_header,
             tv_raboty;
+    ExpandableListView listView;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
 
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity  {
         tv_raboty.setText(endStr);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,7 +95,10 @@ public class MainActivity extends AppCompatActivity  {
         rbZNPP = findViewById(R.id.radioButton2);
         tv_header = (TextView) findViewById(R.id.header);
         tv_raboty = (TextView) findViewById(R.id.tv_chasy);
-       // listView =findViewById(R.id.list_v);
+        listView = (ExpandableListView)findViewById(R.id.exListView);
+
+
+        // listView =findViewById(R.id.list_v);
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
         clearField();
         openText(et_data);
@@ -98,11 +106,6 @@ public class MainActivity extends AppCompatActivity  {
         ColorStateList oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
         Log.d(LOG_TAG, oldColors+ "-------" + oldColors_background);
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
-
-
-
-        // Находим наш list
-        ExpandableListView listView = (ExpandableListView)findViewById(R.id.exListView);
 
          //Создаем адаптер и передаем context и список с данными
         ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
@@ -199,117 +202,66 @@ public class MainActivity extends AppCompatActivity  {
 
 
     // сохранение файла
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void saveText(View view) {
         // Убираю клавиатуру
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         Note note = new Note();
-        FileOutputStream fos = null;
 
         if (check_field()) {
-            try {
-                note.setData(et_data.getText().toString());
+            note.setData(et_data.getText().toString());
 
-                String text = note.getData() + razdelitel;
+            if (rbZN.isChecked())
+                note.setZak(rbZN.getText().toString());
+            else note.setZak(rbZNPP.getText().toString());
+            note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
 
-                if (rbZN.isChecked())
-                    note.setZak(rbZN.getText().toString());
-                else note.setZak(rbZNPP.getText().toString());
-                note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
+            double int_chasy = 0;
+            String chasy = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
+            Log.d(LOG_TAG, chasy);
+            chasy = chasy.replaceAll(",", ".");
 
-                text = text + note.getZak() + razdelitel;
-
-                double int_chasy = 0;
-                String chasy = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
-                Log.d(LOG_TAG, chasy);
-                chasy=chasy.replaceAll(",", ".");
-
-                String[] summa_chasov = chasy.split(" "); // делю строку любыми символами кроме цифр
-                for (int i = 0; i < summa_chasov.length; i++) {
-                    Log.d(LOG_TAG, summa_chasov[i]);
-                    if (summa_chasov[i].contains(".")) int_chasy += Double.parseDouble(summa_chasov[i]);
-                }
-                note.setChas(int_chasy);
-
-                text = text + note.getChas() + "н/ч\r\n";
-                db.insertNote(note);
-
-                fos = openFileOutput(FILE_NAME, MODE_APPEND);
-                fos.write(text.getBytes());
-                Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
-                clearField();
-                openText(view);
-
-            } catch (IOException ex) {
-
-                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            } finally {
-                try {
-                    if (fos != null) fos.close();
-                } catch (IOException ex) {
-
-                    Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+            String[] summa_chasov = chasy.split(" "); // делю строку любыми символами кроме цифр
+            for (int i = 0; i < summa_chasov.length; i++) {
+                Log.d(LOG_TAG, summa_chasov[i]);
+                if (summa_chasov[i].contains("."))
+                    int_chasy += Double.parseDouble(summa_chasov[i]);
             }
+            note.setChas(int_chasy);
+            db.insertNote(note);
+
+            Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
+            clearField();
+            openText(view);
+
         }
 
     }
 
     // открытие файла
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void openText(View view) {
-        FileInputStream fin = null;
-        try {
-            List<Note> notes = db.getAllNotes();
-            for (int i = 0; i < db.getNotesCount(); i++) {
-                Log.d(LOG_TAG,
-                        "id = " + notes.get(i).getId() +
-                                ", Дата = " + notes.get(i).getData() +
-                                ", Заказ_наряд = " + notes.get(i).getZak() +
-                                ", Часы = " + notes.get(i).getChas()
-                );
-            }
-            fin = openFileInput(FILE_NAME);
-            byte[] bytes = new byte[fin.available()];
-            fin.read(bytes);
-            String text = new String(bytes);
-//            tv_open_text.setText(text);
-        } catch (IOException ex) {
-
-            Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-        } finally {
-
-            try {
-                if (fin != null)
-                    fin.close();
-            } catch (IOException ex) {
-
-                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
+        listView.setAdapter(adapter2);
+        List<Note> notes = db.getAllNotes();
+        for (int i = 0; i < db.getNotesCount(); i++) {
+            Log.d(LOG_TAG,
+                    "id = " + notes.get(i).getId() +
+                            ", Дата = " + notes.get(i).getData() +
+                            ", Заказ_наряд = " + notes.get(i).getZak() +
+                            ", Часы = " + notes.get(i).getChas()
+            );
         }
     }
 
+
     // удаление файла
     public void clearText(View view) {
-
-        FileInputStream fin = null;
-        try {
-            Log.d(LOG_TAG, "--- Clear mytable: ---");
-            deleteFile(FILE_NAME);
-//            tv_open_text.setText(null);
-            db.deleteAllNotes();
-            clearField();
-        } finally {
-
-            try {
-                if (fin != null) {
-                    fin.close();
-                }
-            } catch (IOException ex) {
-
-                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
+        Log.d(LOG_TAG, "--- Clear mytable: ---");
+        db.deleteAllNotes();
+        clearField();
     }
 
     // очистка полей ввода
