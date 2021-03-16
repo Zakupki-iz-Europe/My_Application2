@@ -140,8 +140,7 @@
                     android:layout_height= "match_parent"
                     android:layout_weight="2"
                     android:layout_gravity="end"
-                    android:indicatorLeft="250dp"
-                    android:indicatorRight="300dp"
+                    android:groupIndicator="@style/Widget.AppCompat.Spinner"
                     />
 
         </LinearLayout>

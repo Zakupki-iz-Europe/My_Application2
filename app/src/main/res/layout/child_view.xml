@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:textFontWeight="@android:integer/config_mediumAnimTime"
+
         />
     <TextView
         android:id="@+id/textChasy"
@@ -17,6 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
-        android:textFontWeight="@android:integer/config_shortAnimTime"
+        android:textStyle="bold"
         />
 </LinearLayout>

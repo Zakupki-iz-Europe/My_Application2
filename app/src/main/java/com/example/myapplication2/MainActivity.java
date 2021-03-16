@@ -3,8 +3,10 @@ package com.example.myapplication2;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -36,8 +38,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -339,11 +343,14 @@ public class MainActivity extends AppCompatActivity  {
         DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
         String dateText = dateFormat.format(date);
         et_data.setText(dateText);
+
+        dateFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
+        String month = dateFormat.format(date);
         Objects.requireNonNull(getSupportActionBar()).hide();
 //        Spannable text_dateText = new SpannableString(dateText + " ");
 //        Spannable text = new SpannableString("На " + text_dateText + text + "н/ч");
-        String summa_chasov = file_read();
-        Spannable text = new SpannableString("На " + dateText + " " + summa_chasov + "н/ч ");
+        String summa_chasov = file_read(date.getMonth());
+        Spannable text = new SpannableString( month + " - " + summa_chasov + "н/ч ");
 //        text.setSpan(new StyleSpan(Typeface.ITALIC), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        text.setSpan(new ForegroundColorSpan(Color.GREEN), 0, text.length()-1,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        text.setSpan(getResources().getColor(R.color.teal_200), 3, 14,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -360,34 +367,51 @@ public class MainActivity extends AppCompatActivity  {
     ;
 
     // построчное считывание файла
-    public String file_read() {
-        double chasy = 0;
-        int begin_of_nch, end_of_nch;
-        String line, hours;
-        try {
-            FileInputStream is = openFileInput(FILE_NAME);
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-
-            while ((line = br.readLine()) != null) {
-                if (!line.isEmpty()) {
-                    begin_of_nch = line.lastIndexOf(razdelitel) + 1;
-                    end_of_nch = line.length() - 3;
-                    hours = line.substring(begin_of_nch, end_of_nch);
-                    chasy += Double.parseDouble(hours);
-                }
-            }
-            chasy = Math.round(chasy * 100);
-            // clean up
-            br.close();
-            isr.close();
-            is.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public String file_read(int Month) {
+    double sumChas = 0.0;
+        for (Note chas : db.getAllNotes() ) {
+        @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
+         try {
+             Date date = df.parse(chas.getData());
+                 if (date.getMonth() == Month) {
+                     sumChas += chas.getChas();
+                 }
+             } catch (ParseException pe) {
+                    // не получилось
+                    Log.d(LOG_TAG, chas.getData() + "-------" + pe );
+             }
         }
-        return Double.toString(chasy / 100);
+
+        return Double.toString(sumChas);
+
     }
+//        double chasy = 0;
+//        int begin_of_nch, end_of_nch;
+//        String line, hours;
+//        try {
+//            FileInputStream is = openFileInput(FILE_NAME);
+//            InputStreamReader isr = new InputStreamReader(is);
+//            BufferedReader br = new BufferedReader(isr);
+//
+//            while ((line = br.readLine()) != null) {
+//                if (!line.isEmpty()) {
+//                    begin_of_nch = line.lastIndexOf(razdelitel) + 1;
+//                    end_of_nch = line.length() - 3;
+//                    hours = line.substring(begin_of_nch, end_of_nch);
+//                    chasy += Double.parseDouble(hours);
+//                }
+//            }
+//            chasy = Math.round(chasy * 100);
+//            // clean up
+//            br.close();
+//            isr.close();
+//            is.close();
+//
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return Double.toString(chasy / 100);
+//    }
 }

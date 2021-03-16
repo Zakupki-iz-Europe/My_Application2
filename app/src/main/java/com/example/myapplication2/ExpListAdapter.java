@@ -2,39 +2,52 @@ package com.example.myapplication2;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
-import androidx.annotation.RequiresApi;
 import com.example.myapplication2.sqlite.DatabaseHelper;
 import com.example.myapplication2.sqlite.Note;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Locale;
+import java.util.Comparator;
 
 public class ExpListAdapter extends BaseExpandableListAdapter {
     private final ArrayList<ArrayList<Note>> mGroups = new ArrayList<ArrayList<Note>>();
-    private ArrayList<String> mDays;
+    private final ArrayList<String> mDays;
     private final Context mContext;
     private final String LOG_TAG = "List";
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public ExpListAdapter (Context context, DatabaseHelper db){
         mContext = context;
         mDays = db.distinct(Note.COLUMN_DATE);
 
         if (mDays != null){
-// я не знаю как, но это работает!!! надо срочно разбираться с лямбда-функциями
+/*
+  для java 8 . я не знаю как, но это работает!!! надо срочно разбираться с лямбда-функциями
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.getDefault());
             Collections.sort(mDays, (s1, s2) -> LocalDate.parse(s1, formatter).
                     compareTo(LocalDate.parse(s2, formatter)));
+.getDateStr()
 
+*/
+//            сортировка
+            @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
+            mDays.sort(new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    try {
+                        return df.parse(o1).compareTo(df.parse(o2));
+                    } catch (ParseException pe) {
+                        // не получилось
+                        Log.d(LOG_TAG, mGroups + "-------" + pe );
+                    }
+                    return 0;
+                }
+            });
             for(String data:mDays){
                mGroups.add(db.where(Note.COLUMN_DATE, data));
             }
@@ -84,6 +97,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView,
                              ViewGroup parent) {
+       Double daySum = 0.0;
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -99,6 +113,14 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
 
         TextView textGroup = (TextView) convertView.findViewById(R.id.textGroup);
         textGroup.setText(mDays.get(groupPosition));
+
+        for (Note zaDen : mGroups.get(groupPosition)) {
+           daySum += zaDen.getChas();
+        }
+        @SuppressLint("DefaultLocale") String strSum = String.format("%.2f",daySum);
+        TextView textSum = (TextView) convertView.findViewById(R.id.daySum);
+        textSum.setText(strSum);
+
 
         return convertView;
 
