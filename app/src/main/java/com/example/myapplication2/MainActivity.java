@@ -40,6 +40,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Year;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -349,13 +350,14 @@ public class MainActivity extends AppCompatActivity  {
         Objects.requireNonNull(getSupportActionBar()).hide();
 //        Spannable text_dateText = new SpannableString(dateText + " ");
 //        Spannable text = new SpannableString("На " + text_dateText + text + "н/ч");
-        String summa_chasov = file_read(date.getMonth());
-        Spannable text = new SpannableString( month + " - " + summa_chasov + "н/ч ");
+        month +=  " - ";
+        String summa_chasov = file_read(date.getMonth(), date.getYear());
+        Spannable text = new SpannableString( month + summa_chasov + "н/ч ");
 //        text.setSpan(new StyleSpan(Typeface.ITALIC), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        text.setSpan(new ForegroundColorSpan(Color.GREEN), 0, text.length()-1,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        text.setSpan(getResources().getColor(R.color.teal_200), 3, 14,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.purple_200)), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        text.setSpan(new StyleSpan(Typeface.BOLD), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.purple_200)), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new StyleSpan(Typeface.BOLD), month.length(), month.length() + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 //        String str = "На " + text_dateText + text + "н/ч";
 //        Spannable str; // = new SpannableString('');
@@ -367,14 +369,15 @@ public class MainActivity extends AppCompatActivity  {
     ;
 
     // построчное считывание файла
-    public String file_read(int Month) {
+    public String file_read(int Month, int Year) {
     double sumChas = 0.0;
         for (Note chas : db.getAllNotes() ) {
         @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
          try {
              Date date = df.parse(chas.getData());
-                 if (date.getMonth() == Month) {
-                     sumChas += chas.getChas();
+             assert date != null;
+                 if (date.getMonth() == Month && date.getYear() == Year) {
+                         sumChas += chas.getChas();
                  }
              } catch (ParseException pe) {
                     // не получилось

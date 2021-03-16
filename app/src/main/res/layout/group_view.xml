@@ -9,12 +9,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
+        android:layout_gravity="start"
         android:textStyle="bold"
         />
     <TextView
         android:id="@+id/daySum"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:layout_gravity="end"
         android:textStyle="bold"
         />

@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Objects;
 
 public class ExpListAdapter extends BaseExpandableListAdapter {
     private final ArrayList<ArrayList<Note>> mGroups = new ArrayList<ArrayList<Note>>();
@@ -40,7 +41,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
             mDays.sort(new Comparator<String>() {
                 public int compare(String o1, String o2) {
                     try {
-                        return df.parse(o1).compareTo(df.parse(o2));
+                        return Objects.requireNonNull(df.parse(o1)).compareTo(df.parse(o2));
                     } catch (ParseException pe) {
                         // не получилось
                         Log.d(LOG_TAG, mGroups + "-------" + pe );
