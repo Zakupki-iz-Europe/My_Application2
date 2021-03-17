@@ -351,7 +351,7 @@ public class MainActivity extends AppCompatActivity  {
 //        Spannable text_dateText = new SpannableString(dateText + " ");
 //        Spannable text = new SpannableString("На " + text_dateText + text + "н/ч");
         month +=  " - ";
-        String summa_chasov = file_read(date.getMonth(), date.getYear());
+        String summa_chasov = file_read(date);
         Spannable text = new SpannableString( month + summa_chasov + "н/ч ");
 //        text.setSpan(new StyleSpan(Typeface.ITALIC), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        text.setSpan(new ForegroundColorSpan(Color.GREEN), 0, text.length()-1,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -369,14 +369,15 @@ public class MainActivity extends AppCompatActivity  {
     ;
 
     // построчное считывание файла
-    public String file_read(int Month, int Year) {
+    public String file_read(Date date) {
     double sumChas = 0.0;
         for (Note chas : db.getAllNotes() ) {
         @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
          try {
-             Date date = df.parse(chas.getData());
+             Date dateZak = df.parse(chas.getData());
              assert date != null;
-                 if (date.getMonth() == Month && date.getYear() == Year) {
+                 if (dateZak.getMonth() == date.getMonth() &&
+                         dateZak.getYear() == date.getYear()) {
                          sumChas += chas.getChas();
                  }
              } catch (ParseException pe) {
