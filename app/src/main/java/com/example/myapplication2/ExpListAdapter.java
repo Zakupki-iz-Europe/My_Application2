@@ -118,7 +118,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
         for (Note zaDen : mGroups.get(groupPosition)) {
            daySum += zaDen.getChas();
         }
-        @SuppressLint("DefaultLocale") String strSum = String.format("%.2f",daySum);
+        @SuppressLint("DefaultLocale") String strSum = String.format("%.2f",daySum) + " н/ч";
         TextView textSum = (TextView) convertView.findViewById(R.id.daySum);
         textSum.setText(strSum);
 

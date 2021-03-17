@@ -339,29 +339,21 @@ public class MainActivity extends AppCompatActivity  {
         }
     };
 
+    @SuppressLint("SimpleDateFormat")
     public void data_set(Date date) {
         //         Форматирование времени как "день.месяц.год"
         DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
         String dateText = dateFormat.format(date);
         et_data.setText(dateText);
-
-        dateFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
+         dateFormat = new SimpleDateFormat("LLLL yyyy ");
         String month = dateFormat.format(date);
         Objects.requireNonNull(getSupportActionBar()).hide();
-//        Spannable text_dateText = new SpannableString(dateText + " ");
-//        Spannable text = new SpannableString("На " + text_dateText + text + "н/ч");
+        month = month.substring(0,1).toUpperCase() + month.substring(1).toLowerCase();
         month +=  " - ";
-        String summa_chasov = file_read(date);
+        String summa_chasov =  file_read(date);
         Spannable text = new SpannableString( month + summa_chasov + "н/ч ");
-//        text.setSpan(new StyleSpan(Typeface.ITALIC), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        text.setSpan(new ForegroundColorSpan(Color.GREEN), 0, text.length()-1,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        text.setSpan(getResources().getColor(R.color.teal_200), 3, 14,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         //text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.purple_200)), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         text.setSpan(new StyleSpan(Typeface.BOLD), month.length(), month.length() + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-//        String str = "На " + text_dateText + text + "н/ч";
-//        Spannable str; // = new SpannableString('');
-//        str = (Spannable) TextUtils.concat( text_dateText.toString(), text.toString());
         tv_header.setText(text);
 
     }
@@ -369,6 +361,7 @@ public class MainActivity extends AppCompatActivity  {
     ;
 
     // построчное считывание файла
+    @SuppressLint("DefaultLocale")
     public String file_read(Date date) {
     double sumChas = 0.0;
         for (Note chas : db.getAllNotes() ) {
@@ -386,36 +379,7 @@ public class MainActivity extends AppCompatActivity  {
              }
         }
 
-        return Double.toString(sumChas);
+        return String.format("%.2f",sumChas);
 
     }
-//        double chasy = 0;
-//        int begin_of_nch, end_of_nch;
-//        String line, hours;
-//        try {
-//            FileInputStream is = openFileInput(FILE_NAME);
-//            InputStreamReader isr = new InputStreamReader(is);
-//            BufferedReader br = new BufferedReader(isr);
-//
-//            while ((line = br.readLine()) != null) {
-//                if (!line.isEmpty()) {
-//                    begin_of_nch = line.lastIndexOf(razdelitel) + 1;
-//                    end_of_nch = line.length() - 3;
-//                    hours = line.substring(begin_of_nch, end_of_nch);
-//                    chasy += Double.parseDouble(hours);
-//                }
-//            }
-//            chasy = Math.round(chasy * 100);
-//            // clean up
-//            br.close();
-//            isr.close();
-//            is.close();
-//
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return Double.toString(chasy / 100);
-//    }
 }

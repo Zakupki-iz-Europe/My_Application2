@@ -11,6 +11,7 @@
             android:id="@+id/header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
             android:textSize="16sp"
             android:layout_gravity="center"/>
 
@@ -49,7 +50,6 @@
                     android:text="@string/_36"
                     android:checked="true"
                     android:textSize="16sp"
-
                     android:onClick="set_long_len"/>
 
                 <RadioButton
@@ -69,6 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="start"
+                android:textSize="16sp"
                 android:hint="@string/zak_nom"
                 android:inputType="number"
                 android:importantForAutofill="no" />
@@ -76,7 +77,9 @@
                 android:id="@+id/tv_chasy"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="16sp"
                 android:onClick="delText"
+                android:layout_marginStart="8dp"
                 android:text="@string/vsego_chasov" />
 
             <LinearLayout
@@ -92,6 +95,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:textSize="16sp"
                     android:text="@string/_00_00"
                     android:inputType="numberDecimal"
                     android:digits="1234567890.,"
@@ -103,6 +107,7 @@
                     android:onClick="addJob"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="14sp"
                     android:gravity="center"
                     android:text="@string/add" />
 
@@ -119,6 +124,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:textSize="14sp"
                 android:onClick="saveText"
                 android:text="@string/save"/>
 
@@ -127,7 +133,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="clearText"
                     android:layout_margin="8dp"
-                    android:layout_gravity="bottom"
+                    android:layout_gravity="end"
                     android:textSize="12sp"
                     android:text="@string/del_strings" />
 
@@ -140,8 +146,7 @@
                     android:layout_height= "match_parent"
                     android:layout_weight="2"
                     android:layout_gravity="end"
-                    android:groupIndicator="@style/Widget.AppCompat.Spinner"
-                    />
+                      />
 
         </LinearLayout>
 
