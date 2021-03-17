@@ -128,6 +128,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         // prepare note object
+        assert cursor != null;
         Note note = new Note(
                 cursor.getInt(cursor.getColumnIndex(Note.COLUMN_ID)),
                 cursor.getString(cursor.getColumnIndex(Note.COLUMN_ZAK)),

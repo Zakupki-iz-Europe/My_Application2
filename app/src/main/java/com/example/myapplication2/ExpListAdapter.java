@@ -22,7 +22,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
     private final ArrayList<String> mDays;
     private final Context mContext;
     private final String LOG_TAG = "List";
-
+    public Note noteForChange = new Note();
     public ExpListAdapter (Context context, DatabaseHelper db){
         mContext = context;
         mDays = db.distinct(Note.COLUMN_DATE);
@@ -98,18 +98,11 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView,
                              ViewGroup parent) {
-       Double daySum = 0.0;
+       double daySum = 0.0;
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.group_view, null);
-        }
-
-        if (isExpanded){
-            //Изменяем что-нибудь, если текущая Group раскрыта
-        }
-        else{
-            //Изменяем что-нибудь, если текущая Group скрыта
         }
 
         TextView textGroup = (TextView) convertView.findViewById(R.id.textGroup);
@@ -121,7 +114,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
         @SuppressLint("DefaultLocale") String strSum = String.format("%.2f",daySum) + " н/ч";
         TextView textSum = (TextView) convertView.findViewById(R.id.daySum);
         textSum.setText(strSum);
-
 
         return convertView;
 
@@ -147,13 +139,30 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
 
                 zak_nar = String.format("%.2f",chasy);
                 textChasy.setText(zak_nar);
+//
+//            convertView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//
+//
+////                @Override
+////                public void onClick(View v) {
+////
+//                    noteForChange = mGroups.get(groupPosition).get(childPosition);
+////
+//////                    Log.d(LOG_TAG, mGroups.get(groupPosition).get(childPosition).getChas() +
+//////                            "-------" + mGroups.get(groupPosition).get(childPosition).getZak() );
+////                }
+//            });
         }
 
        return convertView;
     }
 
+
+
     @Override
-    public boolean isChildSelectable(int groupPosition, int childPosition) {
-        return true;
-    }
+    public boolean isChildSelectable(int groupPosition, int childPosition) {return true; }
+
+
 }

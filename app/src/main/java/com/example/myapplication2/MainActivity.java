@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -18,7 +18,6 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
@@ -30,19 +29,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.myapplication2.sqlite.DatabaseHelper;
 import com.example.myapplication2.sqlite.Note;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Year;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -52,27 +43,26 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity<global> extends AppCompatActivity  {
 
 //    -------------------------начало списка1------------------
     //https://github.com/ravi8x/AndroidSQLite.git
     //----------------------------------конец списка1-------------------
 
-
-
-    private final static String FILE_NAME = "content.txt";
     private final static String NULLS = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
     int len_zakaz_naryad = 5;
     char razdelitel = ',';
+    int changeNoteID = 0;
     final String LOG_TAG = "myLogs";
     public DatabaseHelper db;
-    int mainTheme = R.style.Theme_newTheme;
-    RadioButton rbZN, rbZNPP;
+    ExpListAdapter ah;
+     Note noteForChange = new Note();
+
+    RadioButton rbZN, rbZAP;
     EditText et_zakaz_naryad,
             et_normo_chasy;
-    TextView tv_open_text,
-            et_data,
+    TextView et_data,
             tv_header,
             tv_raboty;
     ExpandableListView listView;
@@ -97,7 +87,7 @@ public class MainActivity extends AppCompatActivity  {
         et_normo_chasy = findViewById(R.id.normochasy);
         et_data = findViewById(R.id.currentDateTime);
         rbZN = findViewById(R.id.radioButton);
-        rbZNPP = findViewById(R.id.radioButton2);
+        rbZAP = findViewById(R.id.radioButton2);
         tv_header = (TextView) findViewById(R.id.header);
         tv_raboty = (TextView) findViewById(R.id.tv_chasy);
         listView = (ExpandableListView)findViewById(R.id.exListView);
@@ -115,7 +105,29 @@ public class MainActivity extends AppCompatActivity  {
          //Создаем адаптер и передаем context и список с данными
         ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
         listView.setAdapter(adapter2);
+        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @SuppressLint("SetTextI18n")
+            public boolean onChildClick(ExpandableListView parent, View v,
+                                        int groupPosition, int childPosition, long id) {
+                noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
+                Log.d(LOG_TAG, "onChildClick groupPosition = " + groupPosition +
+                        " childPosition = " + childPosition +
+                        " noteForChange = " + noteForChange.getId());
+//                );
+                String zn = "";
+                et_data.setText(noteForChange.getData());
+                et_normo_chasy.setText( Double.toString(noteForChange.getChas()));
+                if (noteForChange.getZak().indexOf(rbZAP.getText().toString()) > 0 ) {
+                    rbZAP.setChecked(TRUE);
+                    zn = noteForChange.getZak().substring(rbZAP.getText().length());}
+                else {
+                    rbZN.setChecked(TRUE);
+                    zn = noteForChange.getZak().substring(rbZN.getText().length());}
 
+                et_zakaz_naryad.setText(zn);
+                return false;
+            }
+        });
 
 
         et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
@@ -220,7 +232,7 @@ public class MainActivity extends AppCompatActivity  {
 
             if (rbZN.isChecked())
                 note.setZak(rbZN.getText().toString());
-            else note.setZak(rbZNPP.getText().toString());
+            else note.setZak(rbZAP.getText().toString());
             note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
 
             double int_chasy = 0;
