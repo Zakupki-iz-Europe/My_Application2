@@ -54,8 +54,12 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
             }
         }
         else {
+            if (BuildConfig.DEBUG) {
+                throw new AssertionError("Assertion failed");
+            }
             mDays.add("Нет даты");
-            mGroups.add(new ArrayList<>());}
+            mGroups.add(new ArrayList<>());
+        }
         Log.d(LOG_TAG, mGroups + "-------" );
     }
 
@@ -77,6 +81,8 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
+//        Log.d(LOG_TAG, mGroups + "-------" + groupPosition + "------" + childPosition );
+
         return mGroups.get(groupPosition).get(childPosition);
     }
 
@@ -139,30 +145,9 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
 
                 zak_nar = String.format("%.2f",chasy);
                 textChasy.setText(zak_nar);
-//
-//            convertView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//
-//
-////                @Override
-////                public void onClick(View v) {
-////
-//                    noteForChange = mGroups.get(groupPosition).get(childPosition);
-////
-//////                    Log.d(LOG_TAG, mGroups.get(groupPosition).get(childPosition).getChas() +
-//////                            "-------" + mGroups.get(groupPosition).get(childPosition).getZak() );
-////                }
-//            });
         }
-
        return convertView;
     }
-
-
-
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {return true; }
-
-
 }

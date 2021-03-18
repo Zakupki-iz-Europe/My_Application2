@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.NoCopySpan;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
@@ -51,14 +52,13 @@ public class MainActivity<global> extends AppCompatActivity  {
 
     private final static String NULLS = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
+    static int LEN_ZAKAZ_NAR = 7;
     int len_zakaz_naryad = 5;
     char razdelitel = ',';
-    int changeNoteID = 0;
     final String LOG_TAG = "myLogs";
     public DatabaseHelper db;
-    ExpListAdapter ah;
-     Note noteForChange = new Note();
-
+    boolean isNoteChanged = FALSE;
+    Note noteForChange = new Note();
     RadioButton rbZN, rbZAP;
     EditText et_zakaz_naryad,
             et_normo_chasy;
@@ -68,7 +68,8 @@ public class MainActivity<global> extends AppCompatActivity  {
     ExpandableListView listView;
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
-
+    ColorStateList oldColors;
+//    -------------- Удаление по тапу одной работы из строки ВСЕГО ЧАСОВ ---------
     public void delText(View view) {
         String str = tv_raboty.getText().toString();
         String endStr = str;
@@ -76,6 +77,7 @@ public class MainActivity<global> extends AppCompatActivity  {
         tv_raboty.setText(endStr);
     }
 
+//  ----------------- Основная программа---------------------------------------------
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,31 +95,35 @@ public class MainActivity<global> extends AppCompatActivity  {
         listView = (ExpandableListView)findViewById(R.id.exListView);
 
 
-        // listView =findViewById(R.id.list_v);
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
         clearField();
         openText(et_data);
         ColorStateList oldColors_background =  rbZN.getLinkTextColors();
-        ColorStateList oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
+        oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
         Log.d(LOG_TAG, oldColors+ "-------" + oldColors_background);
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
 
          //Создаем адаптер и передаем context и список с данными
-        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
+        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db);
         listView.setAdapter(adapter2);
+
+        // ---------------Отработка нажатий по списку ------------------------------------
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @SuppressLint("SetTextI18n")
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
+                isNoteChanged = TRUE;
                 noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
                 Log.d(LOG_TAG, "onChildClick groupPosition = " + groupPosition +
                         " childPosition = " + childPosition +
                         " noteForChange = " + noteForChange.getId());
 //                );
                 String zn = "";
+                clearField();
                 et_data.setText(noteForChange.getData());
                 et_normo_chasy.setText( Double.toString(noteForChange.getChas()));
-                if (noteForChange.getZak().indexOf(rbZAP.getText().toString()) > 0 ) {
+                if (noteForChange.getZak().contains(rbZAP.getText().
+                                         subSequence(0,rbZAP.getText().length()))) {
                     rbZAP.setChecked(TRUE);
                     zn = noteForChange.getZak().substring(rbZAP.getText().length());}
                 else {
@@ -129,51 +135,54 @@ public class MainActivity<global> extends AppCompatActivity  {
             }
         });
 
-
-        et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.length() < len_zakaz_naryad) et_zakaz_naryad.setTextColor(Color.RED);
-                else {
-                    et_zakaz_naryad.setTextColor(oldColors);
-                    et_normo_chasy.requestFocus();
-                    et_normo_chasy.setSelection(et_normo_chasy.getText().length());
-                    if (s.length() > len_zakaz_naryad)
-                        s.delete(len_zakaz_naryad, s.length());
-                }
-            }
-        });
+// ------------------- Обработка изменения текста в заказ-наряде ----------------------------
+   et_zakaz_naryad.addTextChangedListener(et_zn_watcher);
+// ------------------------- Обработка изменения часов ---------------------------------------
    et_normo_chasy.addTextChangedListener(new MyWatcher());
     }
+
+    TextWatcher et_zn_watcher =  new TextWatcher() {
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override
+        public void afterTextChanged(Editable s) {
+            check_text_zn(s);
+        }
+    };
+
+    public boolean check_text_zn(Editable s) {
+        len_zakaz_naryad = set_len_zn();
+        if (s.length() < len_zakaz_naryad) {
+            et_zakaz_naryad.setTextColor(Color.RED);
+            return FALSE;
+        }
+        else {
+            et_zakaz_naryad.setTextColor(oldColors);
+            et_normo_chasy.requestFocus();
+            et_normo_chasy.setSelection(et_normo_chasy.getText().length());
+            if (s.length() > len_zakaz_naryad)
+                s.delete(len_zakaz_naryad, s.length());
+        }
+        return TRUE;
+    };
 
 
     public class MyWatcher implements TextWatcher {
         @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
-
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
-
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
         @Override
         public void afterTextChanged(Editable s) {
             int len = s.length();
-            Log.d(LOG_TAG,  "-------" + len);
             if (len > 0) {
                 if (len != 5) {
                     StringBuilder strBuff = new StringBuilder();
                     char c;
                     double chas;
-                    String strng;
+                    String strng; // Выбрасываю все знаки из строки - хотя их нельзя ввести, но можно вставить
                     for (int i = 0; i < len; i++) {
                         c = et_normo_chasy.getText().toString().charAt(i);
                         if (Character.isDigit(c)) {
@@ -183,7 +192,6 @@ public class MainActivity<global> extends AppCompatActivity  {
 
                     int strLen = strBuff.length();
                     strng = strBuff.toString();
-                    Log.d(LOG_TAG, strng+ "-------" + strLen);
                         if (strLen > 4) strng = strBuff.substring(strLen - 4);
                     chas = Double.parseDouble(strng);
                     chas = chas/100;
@@ -203,7 +211,7 @@ public class MainActivity<global> extends AppCompatActivity  {
         setTheme(R.style.Theme_AppCompat_DayNight);
         recreate();
     }
-
+// ------------------------------ Кнопка добавить работу в строку ВСЕГО РАБОТ-------
     public void addJob(View view) {
         String raboty = tv_raboty.getText().toString();
         String chasyki = et_normo_chasy.getText().toString();
@@ -241,13 +249,17 @@ public class MainActivity<global> extends AppCompatActivity  {
             chasy = chasy.replaceAll(",", ".");
 
             String[] summa_chasov = chasy.split(" "); // делю строку любыми символами кроме цифр
-            for (int i = 0; i < summa_chasov.length; i++) {
-                Log.d(LOG_TAG, summa_chasov[i]);
-                if (summa_chasov[i].contains("."))
-                    int_chasy += Double.parseDouble(summa_chasov[i]);
+            for (String s : summa_chasov) {
+                Log.d(LOG_TAG, s);
+                if (s.contains("."))
+                    int_chasy += Double.parseDouble(s);
             }
             note.setChas(int_chasy);
-            db.insertNote(note);
+           if (isNoteChanged) {
+               db.updateNote(note);
+               isNoteChanged = FALSE;
+           }
+                else db.insertNote(note);
 
             Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
             clearField();
@@ -273,8 +285,7 @@ public class MainActivity<global> extends AppCompatActivity  {
         }
     }
 
-
-    // удаление файла
+//------------------ Удаление файла ---------------------
     public void clearText(View view) {
         Log.d(LOG_TAG, "--- Clear mytable: ---");
         db.deleteAllNotes();
@@ -293,24 +304,26 @@ public class MainActivity<global> extends AppCompatActivity  {
         data_set(currentDate);
     }
 
-    public void set_short_len(View view) {
-        len_zakaz_naryad = 4;
-        Value = et_zakaz_naryad.getText().toString();
-        if (Value.length() > len_zakaz_naryad)
-            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
-// если уже набрали больше символов, то оставляем по длине
+    private int check_len_zn(RadioButton rb) {
+        if (rb.isChecked()) {
+            String str = rb.getText().toString();
+            return str.length() - str.indexOf('-');
+        }
+        return 0;
     }
 
-    public void set_long_len(View view) {
-        len_zakaz_naryad = 5;
+    public int set_len_zn() {
+        return LEN_ZAKAZ_NAR - check_len_zn(rbZAP) - check_len_zn(rbZN);
     }
+
+    public void set_short_len(View view) {
+        check_text_zn(et_zakaz_naryad.getText());
+    };
 
     // проверка, что поля не пустые
     public boolean check_field() {
-        Value = et_zakaz_naryad.getText().toString();
-        if (Value.length() > len_zakaz_naryad)
-            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
-        else if (Value.length() < len_zakaz_naryad) {
+
+        if (!check_text_zn(et_zakaz_naryad.getText())) {
             focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
             return FALSE;
         }
@@ -381,7 +394,8 @@ public class MainActivity<global> extends AppCompatActivity  {
          try {
              Date dateZak = df.parse(chas.getData());
              assert date != null;
-                 if (dateZak.getMonth() == date.getMonth() &&
+             assert dateZak != null;
+             if (dateZak.getMonth() == date.getMonth() &&
                          dateZak.getYear() == date.getYear()) {
                          sumChas += chas.getChas();
                  }

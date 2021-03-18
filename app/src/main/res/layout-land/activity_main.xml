@@ -50,7 +50,7 @@
                     android:text="@string/_36"
                     android:checked="true"
                     android:textSize="16sp"
-                    android:onClick="set_long_len"/>
+                    android:onClick="set_short_len"/>
 
                 <RadioButton
                     android:id="@+id/radioButton2"
