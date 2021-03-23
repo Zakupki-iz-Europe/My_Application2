@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,17 +186,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    public int updateNote(Note note) {
+    public void updateNote(Note note) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(Note.COLUMN_ZAK, note.getZak());
         values.put(Note.COLUMN_DATE, note.getData());
         values.put(Note.COLUMN_CHAS, note.getChas());
-
+        Log.d("DatabaseHelper",
+                "id = " + note.getId() +
+                        ", Дата = " + note.getData() +
+                        ", Заказ_наряд = " + note.getZak() +
+                        ", Часы = " + note.getChas()
+        );
         // updating row
-        return db.update(Note.TABLE_NAME, values, Note.COLUMN_ID + " = ?",
+         db.update(Note.TABLE_NAME, values, Note.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(note.getId())});
+//    return db.update(Note.TABLE_NAME, values, null, null);
+        db.close();
+
     }
 
     public void deleteNote(Note note) {

@@ -6,8 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.NoCopySpan;
-import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -23,7 +21,6 @@ import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -44,7 +41,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 
-public class MainActivity<global> extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity  {
 
 //    -------------------------начало списка1------------------
     //https://github.com/ravi8x/AndroidSQLite.git
@@ -59,16 +56,17 @@ public class MainActivity<global> extends AppCompatActivity  {
     public DatabaseHelper db;
     boolean isNoteChanged = FALSE;
     Note noteForChange = new Note();
-    RadioButton rbZN, rbZAP;
-    EditText et_zakaz_naryad,
-            et_normo_chasy;
-    TextView et_data,
-            tv_header,
-            tv_raboty;
-    ExpandableListView listView;
+    RadioButton rbZN = findViewById(R.id.radioButton), rbZAP = findViewById(R.id.radioButton2);
+    EditText et_zakaz_naryad = findViewById(R.id.zakaz_naryad),
+            et_normo_chasy = findViewById(R.id.normochasy);
+    TextView et_data = findViewById(R.id.currentDateTime),
+            tv_header = findViewById(R.id.header),
+            tv_raboty = findViewById(R.id.tv_chasy);
+    ExpandableListView listView = findViewById(R.id.exListView);
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
     ColorStateList oldColors;
+    ExpListAdapter adapter2;
 //    -------------- Удаление по тапу одной работы из строки ВСЕГО ЧАСОВ ---------
     public void delText(View view) {
         String str = tv_raboty.getText().toString();
@@ -85,14 +83,7 @@ public class MainActivity<global> extends AppCompatActivity  {
         setContentView(R.layout.activity_main);
 
         db = new DatabaseHelper(this);
-        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
-        et_normo_chasy = findViewById(R.id.normochasy);
-        et_data = findViewById(R.id.currentDateTime);
-        rbZN = findViewById(R.id.radioButton);
-        rbZAP = findViewById(R.id.radioButton2);
-        tv_header = (TextView) findViewById(R.id.header);
-        tv_raboty = (TextView) findViewById(R.id.tv_chasy);
-        listView = (ExpandableListView)findViewById(R.id.exListView);
+        adapter2 = new ExpListAdapter(getApplicationContext(), db);
 
 
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
@@ -100,12 +91,7 @@ public class MainActivity<global> extends AppCompatActivity  {
         openText(et_data);
         ColorStateList oldColors_background =  rbZN.getLinkTextColors();
         oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
-        Log.d(LOG_TAG, oldColors+ "-------" + oldColors_background);
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
-
-         //Создаем адаптер и передаем context и список с данными
-        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db);
-        listView.setAdapter(adapter2);
 
         // ---------------Отработка нажатий по списку ------------------------------------
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
@@ -114,10 +100,12 @@ public class MainActivity<global> extends AppCompatActivity  {
                                         int groupPosition, int childPosition, long id) {
                 isNoteChanged = TRUE;
                 noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
-                Log.d(LOG_TAG, "onChildClick groupPosition = " + groupPosition +
-                        " childPosition = " + childPosition +
-                        " noteForChange = " + noteForChange.getId());
-//                );
+                Log.d("onChildClick",
+                        "id = " + noteForChange.getId() +
+                                ", Дата = " + noteForChange.getData() +
+                                ", Заказ_наряд = " + noteForChange.getZak() +
+                                ", Часы = " + noteForChange.getChas()
+                );
                 String zn = "";
                 clearField();
                 et_data.setText(noteForChange.getData());
@@ -131,7 +119,7 @@ public class MainActivity<global> extends AppCompatActivity  {
                     zn = noteForChange.getZak().substring(rbZN.getText().length());}
 
                 et_zakaz_naryad.setText(zn);
-                return false;
+                return FALSE;
             }
         });
 
@@ -166,7 +154,7 @@ public class MainActivity<global> extends AppCompatActivity  {
                 s.delete(len_zakaz_naryad, s.length());
         }
         return TRUE;
-    };
+    }
 
 
     public class MyWatcher implements TextWatcher {
@@ -197,7 +185,6 @@ public class MainActivity<global> extends AppCompatActivity  {
                     chas = chas/100;
                     DecimalFormat formater = new DecimalFormat("00.00");
                         if (chas==0) strng = NULLS; else strng = formater.format(chas);
-                    Log.d(LOG_TAG, strng+ "-------" + chas);
                     s.replace(0,s.length(),strng);
                 }
                 else if (s.charAt(0) != '0') addJob(et_normo_chasy);
@@ -206,21 +193,15 @@ public class MainActivity<global> extends AppCompatActivity  {
         }
     }
 
-    public void changeTheme(View view) {
-        Log.d(LOG_TAG, "-------" + this.getTheme());
-        setTheme(R.style.Theme_AppCompat_DayNight);
-        recreate();
-    }
-// ------------------------------ Кнопка добавить работу в строку ВСЕГО РАБОТ-------
+    // ------------------------------ Кнопка добавить работу в строку ВСЕГО РАБОТ-------
     public void addJob(View view) {
         String raboty = tv_raboty.getText().toString();
         String chasyki = et_normo_chasy.getText().toString();
-        Log.d(LOG_TAG, chasyki + "-------" + NULLS);
         if (!chasyki.equals(NULLS)) {
             String firstJob = raboty + chasyki;
             et_normo_chasy.setText(NULLS);
             et_normo_chasy.setSelection(NULLS.length());
-            firstJob = firstJob + " + ";
+            firstJob += " + ";
             tv_raboty.setText(firstJob);
         }
     }
@@ -245,19 +226,20 @@ public class MainActivity<global> extends AppCompatActivity  {
 
             double int_chasy = 0;
             String chasy = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
-            Log.d(LOG_TAG, chasy);
             chasy = chasy.replaceAll(",", ".");
 
             String[] summa_chasov = chasy.split(" "); // делю строку любыми символами кроме цифр
             for (String s : summa_chasov) {
-                Log.d(LOG_TAG, s);
                 if (s.contains("."))
                     int_chasy += Double.parseDouble(s);
             }
             note.setChas(int_chasy);
            if (isNoteChanged) {
+               note.setId(noteForChange.getId());
                db.updateNote(note);
                isNoteChanged = FALSE;
+               noteForChange = null;
+               recreate();
            }
                 else db.insertNote(note);
 
@@ -270,9 +252,8 @@ public class MainActivity<global> extends AppCompatActivity  {
     }
 
     // открытие файла
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void openText(View view) {
-        ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
+    //    ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
         listView.setAdapter(adapter2);
         List<Note> notes = db.getAllNotes();
         for (int i = 0; i < db.getNotesCount(); i++) {
@@ -287,7 +268,6 @@ public class MainActivity<global> extends AppCompatActivity  {
 
 //------------------ Удаление файла ---------------------
     public void clearText(View view) {
-        Log.d(LOG_TAG, "--- Clear mytable: ---");
         db.deleteAllNotes();
         clearField();
     }
@@ -307,7 +287,7 @@ public class MainActivity<global> extends AppCompatActivity  {
     private int check_len_zn(RadioButton rb) {
         if (rb.isChecked()) {
             String str = rb.getText().toString();
-            return str.length() - str.indexOf('-');
+            return str.length() - (str.indexOf('-') + 1);
         }
         return 0;
     }
@@ -318,7 +298,7 @@ public class MainActivity<global> extends AppCompatActivity  {
 
     public void set_short_len(View view) {
         check_text_zn(et_zakaz_naryad.getText());
-    };
+    }
 
     // проверка, что поля не пустые
     public boolean check_field() {
@@ -355,13 +335,11 @@ public class MainActivity<global> extends AppCompatActivity  {
     }
 
     // установка обработчика выбора даты
-    DatePickerDialog.OnDateSetListener d = new DatePickerDialog.OnDateSetListener() {
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            dateAndTime.set(Calendar.YEAR, year);
-            dateAndTime.set(Calendar.MONTH, monthOfYear);
-            dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            data_set(dateAndTime.getTime());
-        }
+    DatePickerDialog.OnDateSetListener d = (view, year, monthOfYear, dayOfMonth) -> {
+        dateAndTime.set(Calendar.YEAR, year);
+        dateAndTime.set(Calendar.MONTH, monthOfYear);
+        dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        data_set(dateAndTime.getTime());
     };
 
     @SuppressLint("SimpleDateFormat")
@@ -383,7 +361,7 @@ public class MainActivity<global> extends AppCompatActivity  {
 
     }
 
-    ;
+
 
     // построчное считывание файла
     @SuppressLint("DefaultLocale")
@@ -393,13 +371,16 @@ public class MainActivity<global> extends AppCompatActivity  {
         @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
          try {
              Date dateZak = df.parse(chas.getData());
-             assert date != null;
-             assert dateZak != null;
-             if (dateZak.getMonth() == date.getMonth() &&
-                         dateZak.getYear() == date.getYear()) {
+             if (date != null) {
+                 if (dateZak == null) throw new AssertionError();
+                 if (dateZak.getYear() == date.getYear())
+                     if (dateZak.getMonth() == date.getMonth()) {
                          sumChas += chas.getChas();
-                 }
-             } catch (ParseException pe) {
+                     }
+             } else {
+                 throw new AssertionError();
+             }
+         } catch (ParseException pe) {
                     // не получилось
                     Log.d(LOG_TAG, chas.getData() + "-------" + pe );
              }

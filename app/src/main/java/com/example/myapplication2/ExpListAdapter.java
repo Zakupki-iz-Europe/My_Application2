@@ -80,7 +80,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public Object getChild(int groupPosition, int childPosition) {
+    public Note getChild(int groupPosition, int childPosition) {
 //        Log.d(LOG_TAG, mGroups + "-------" + groupPosition + "------" + childPosition );
 
         return mGroups.get(groupPosition).get(childPosition);
