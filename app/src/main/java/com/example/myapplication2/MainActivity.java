@@ -56,17 +56,19 @@ public class MainActivity extends AppCompatActivity  {
     public DatabaseHelper db;
     boolean isNoteChanged = FALSE;
     Note noteForChange = new Note();
-    RadioButton rbZN = findViewById(R.id.radioButton), rbZAP = findViewById(R.id.radioButton2);
-    EditText et_zakaz_naryad = findViewById(R.id.zakaz_naryad),
-            et_normo_chasy = findViewById(R.id.normochasy);
-    TextView et_data = findViewById(R.id.currentDateTime),
-            tv_header = findViewById(R.id.header),
-            tv_raboty = findViewById(R.id.tv_chasy);
-    ExpandableListView listView = findViewById(R.id.exListView);
     String Value;
     Calendar dateAndTime = Calendar.getInstance();
     ColorStateList oldColors;
     ExpListAdapter adapter2;
+    RadioButton rbZN, rbZAP;
+    EditText et_zakaz_naryad ,
+            et_normo_chasy ;
+    TextView et_data,
+            tv_header,
+            tv_raboty;
+    ExpandableListView listView ;
+
+
 //    -------------- Удаление по тапу одной работы из строки ВСЕГО ЧАСОВ ---------
     public void delText(View view) {
         String str = tv_raboty.getText().toString();
@@ -81,9 +83,16 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        rbZN = findViewById(R.id.radioButton);
+        rbZAP = findViewById(R.id.radioButton2);
+        et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
+        et_normo_chasy = findViewById(R.id.normochasy);
+        et_data = findViewById(R.id.currentDateTime);
+        tv_header = findViewById(R.id.header);
+        tv_raboty = findViewById(R.id.tv_chasy);
+        listView = findViewById(R.id.exListView);
         db = new DatabaseHelper(this);
-        adapter2 = new ExpListAdapter(getApplicationContext(), db);
+//        adapter2 = new ExpListAdapter(getApplicationContext(), db);
 
 
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
@@ -239,7 +248,7 @@ public class MainActivity extends AppCompatActivity  {
                db.updateNote(note);
                isNoteChanged = FALSE;
                noteForChange = null;
-               recreate();
+//               recreate();
            }
                 else db.insertNote(note);
 
@@ -253,7 +262,7 @@ public class MainActivity extends AppCompatActivity  {
 
     // открытие файла
     public void openText(View view) {
-    //    ExpListAdapter adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
+      adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
         listView.setAdapter(adapter2);
         List<Note> notes = db.getAllNotes();
         for (int i = 0; i < db.getNotesCount(); i++) {

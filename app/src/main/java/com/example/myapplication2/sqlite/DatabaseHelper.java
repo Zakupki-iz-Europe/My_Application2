@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Created by tim
+ * https://github.com/ravi8x/AndroidSQLite/blob/master/app/src/main/java/info/androidhive/sqlite/database/DatabaseHelper.java
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
