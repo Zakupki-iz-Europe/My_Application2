@@ -39,6 +39,7 @@ import java.util.Objects;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 
 
 public class MainActivity extends AppCompatActivity  {
@@ -49,14 +50,14 @@ public class MainActivity extends AppCompatActivity  {
 
     private final static String NULLS = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
+    private final static Double MAX_CHASOV = 99.99;
     static int LEN_ZAKAZ_NAR = 7;
-    int len_zakaz_naryad = 5;
+    int len_zakaz_naryad;
     char razdelitel = ',';
     final String LOG_TAG = "myLogs";
     public DatabaseHelper db;
     boolean isNoteChanged = FALSE;
     Note noteForChange = new Note();
-    String Value;
     Calendar dateAndTime = Calendar.getInstance();
     ColorStateList oldColors;
     ExpListAdapter adapter2;
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity  {
                 String zn = "";
                 clearField();
                 et_data.setText(noteForChange.getData());
-                et_normo_chasy.setText( Double.toString(noteForChange.getChas()));
+                et_normo_chasy.setText(String.format(Locale.getDefault(),"%05.2f", noteForChange.getChas()));
                 if (noteForChange.getZak().contains(rbZAP.getText().
                                          subSequence(0,rbZAP.getText().length()))) {
                     rbZAP.setChecked(TRUE);
@@ -217,7 +218,7 @@ public class MainActivity extends AppCompatActivity  {
 
 
     // сохранение файла
-    @RequiresApi(api = Build.VERSION_CODES.O)
+//    @RequiresApi(api = Build.VERSION_CODES.O)
     public void saveText(View view) {
         // Убираю клавиатуру
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -231,28 +232,19 @@ public class MainActivity extends AppCompatActivity  {
             if (rbZN.isChecked())
                 note.setZak(rbZN.getText().toString());
             else note.setZak(rbZAP.getText().toString());
+
             note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
 
-            double int_chasy = 0;
-            String chasy = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
-            chasy = chasy.replaceAll(",", ".");
+            note.setChas(Double.parseDouble(tv_raboty.getText().toString().replace(",", ".")));
 
-            String[] summa_chasov = chasy.split(" "); // делю строку любыми символами кроме цифр
-            for (String s : summa_chasov) {
-                if (s.contains("."))
-                    int_chasy += Double.parseDouble(s);
-            }
-            note.setChas(int_chasy);
-           if (isNoteChanged) {
+            if (isNoteChanged) {
                note.setId(noteForChange.getId());
                db.updateNote(note);
                isNoteChanged = FALSE;
                noteForChange = null;
-//               recreate();
            }
                 else db.insertNote(note);
 
-            Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
             clearField();
             openText(view);
 
@@ -288,7 +280,6 @@ public class MainActivity extends AppCompatActivity  {
         et_normo_chasy.setText(NULLS);
         tv_raboty.setText(VSEGO_CHASOV);
         rbZN.setChecked(TRUE);
-        len_zakaz_naryad = 5;
         Date currentDate = new Date();
         data_set(currentDate);
     }
@@ -310,27 +301,47 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     // проверка, что поля не пустые
-    public boolean check_field() {
+   public boolean check_field() {
+    String chasy;
+    String[] summa_chasov;
+    double int_chasy = 0.0;
 
         if (!check_text_zn(et_zakaz_naryad.getText())) {
             focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
             return FALSE;
         }
 
-        Value = et_normo_chasy.getText().toString() + tv_raboty.getText().toString();
-        if (Value.length() < 2) {
-            focus_keyboard(et_normo_chasy, "Введи часы за работу");
-            return FALSE;
-        }
+    chasy= format("%s%s", tv_raboty.getText().toString(), et_normo_chasy.getText().toString());
+    chasy = chasy.replaceAll(",", ".");
+    summa_chasov= chasy.split(" "); // делю строку любыми символами кроме цифр
 
-        return TRUE;
+    for (String s : summa_chasov)
+        if (s.contains("."))
+            int_chasy += Double.parseDouble(s);
+
+    if (int_chasy == 0.0) {
+        focus_keyboard(et_normo_chasy, "Введи часы за работу");
+        return FALSE;
     }
+
+    if (int_chasy > MAX_CHASOV) {
+        int_chasy -= MAX_CHASOV;
+        focus_keyboard(et_normo_chasy, "Братан, это круто, но в одном заказе не больше " + MAX_CHASOV + " часов");
+        String s = VSEGO_CHASOV + String.format(Locale.getDefault(),"%05.2f",int_chasy) + " + ";
+        tv_raboty.setText(s);
+        return FALSE;
+    }
+    Toast.makeText(this, "Запись сохранена", Toast.LENGTH_SHORT).show();
+    tv_raboty.setText(Double.toString(int_chasy));
+    return TRUE;
+   }
 
     public void focus_keyboard(EditText editText, String str) {
         editText.requestFocus();
+        editText.setSelection(editText.getText().length());
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, str, Toast.LENGTH_LONG).show();
     }
 
 
@@ -395,7 +406,7 @@ public class MainActivity extends AppCompatActivity  {
              }
         }
 
-        return String.format("%.2f",sumChas);
+        return format("%.2f",sumChas);
 
     }
 }
