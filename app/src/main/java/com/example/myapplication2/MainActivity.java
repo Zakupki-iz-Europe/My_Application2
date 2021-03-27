@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity  {
     private final static String NULLS = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
     private final static Double MAX_CHASOV = 99.99;
-    private Map<String, String> prefix = new HashMap<>();
+    private final Map<String, String> prefix = new HashMap<>();
     static int LEN_ZAKAZ_NAR = 7;
     int len_zakaz_naryad;
     char razdelitel = ',';
@@ -139,6 +140,60 @@ public class MainActivity extends AppCompatActivity  {
 
             return FALSE;
         });
+
+        // ---------------Отработка нажатий по списку ------------------------------------
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+                if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                    int groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                    int childPosition = ExpandableListView.getPackedPositionChild(id);
+
+
+                   Log.d("activity","group: "+groupPosition +" child:"+childPosition);
+
+
+
+                    // Return true as we are handling the event.
+                    return true;
+                }
+                return false;
+            }
+        });
+//        .setOnItemLongClickListener((ExpandableListView.OnItemLongClickListener)
+//                (parent,
+//                 v,
+//                 groupPosition,
+//                 childPosition) -> {
+////                    noteForChange = (Note) adapter2.getChild(groupPosition, (int) childPosition);
+//                    Log.d("Listener",
+//                            "id = " + childPosition +
+//                                    ", groupPosition = " + groupPosition );
+//
+//                    Log.d("Deleting note",
+//                            "id = " + noteForChange.getId() +
+//                                    ", Дата = " + noteForChange.getData() +
+//                                    ", Заказ_наряд = " + noteForChange.getZak() +
+//                                    ", Часы = " + noteForChange.getChas()
+//                    );
+//                    String zn;
+//                    clearField();
+//                    et_data.setText(noteForChange.getData());
+//                    if (noteForChange.getZak().contains(rbZAP.getText().
+//                            subSequence(0,rbZAP.getText().length()))) {
+//                        rbZAP.setChecked(TRUE);
+//                        zn = noteForChange.getZak().substring(rbZAP.getText().length());}
+//                    else {
+//                        rbZN.setChecked(TRUE);
+//                        zn = noteForChange.getZak().substring(rbZN.getText().length());}
+//
+//                    et_zakaz_naryad.setText(zn);
+////                    et_normo_chasy.setText(format(Locale.getDefault(),"%05.2f", noteForChange.getChas()));
+//
+//                    return FALSE;
+//                });
+
+
 
 // ------------------- Обработка изменения текста в заказ-наряде ----------------------------
    et_zakaz_naryad.addTextChangedListener(et_zn_watcher);
