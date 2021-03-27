@@ -1,5 +1,7 @@
 package com.example.myapplication2;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,11 +33,16 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -51,6 +58,7 @@ public class MainActivity extends AppCompatActivity  {
     private final static String NULLS = "00,00";
     private final static String VSEGO_CHASOV = "Всего часов: ";
     private final static Double MAX_CHASOV = 99.99;
+    private Map<String, String> prefix = new HashMap<>();
     static int LEN_ZAKAZ_NAR = 7;
     int len_zakaz_naryad;
     char razdelitel = ',';
@@ -93,7 +101,8 @@ public class MainActivity extends AppCompatActivity  {
         tv_raboty = findViewById(R.id.tv_chasy);
         listView = findViewById(R.id.exListView);
         db = new DatabaseHelper(this);
-//        adapter2 = new ExpListAdapter(getApplicationContext(), db);
+        prefix.put(getString(R.string._36), NULLS);
+        prefix.put(getString(R.string._116), "00,30");
 
 
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
@@ -104,33 +113,31 @@ public class MainActivity extends AppCompatActivity  {
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
 
         // ---------------Отработка нажатий по списку ------------------------------------
-        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @SuppressLint("SetTextI18n")
-            public boolean onChildClick(ExpandableListView parent, View v,
-                                        int groupPosition, int childPosition, long id) {
-                isNoteChanged = TRUE;
-                noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
-                Log.d("onChildClick",
-                        "id = " + noteForChange.getId() +
-                                ", Дата = " + noteForChange.getData() +
-                                ", Заказ_наряд = " + noteForChange.getZak() +
-                                ", Часы = " + noteForChange.getChas()
-                );
-                String zn = "";
-                clearField();
-                et_data.setText(noteForChange.getData());
-                et_normo_chasy.setText(String.format(Locale.getDefault(),"%05.2f", noteForChange.getChas()));
-                if (noteForChange.getZak().contains(rbZAP.getText().
-                                         subSequence(0,rbZAP.getText().length()))) {
-                    rbZAP.setChecked(TRUE);
-                    zn = noteForChange.getZak().substring(rbZAP.getText().length());}
-                else {
-                    rbZN.setChecked(TRUE);
-                    zn = noteForChange.getZak().substring(rbZN.getText().length());}
+        listView.setOnChildClickListener((ExpandableListView.OnChildClickListener)
+                (parent, v, groupPosition, childPosition, id) -> {
+            isNoteChanged = TRUE;
+            noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
+            Log.d("onChildClick",
+                    "id = " + noteForChange.getId() +
+                            ", Дата = " + noteForChange.getData() +
+                            ", Заказ_наряд = " + noteForChange.getZak() +
+                            ", Часы = " + noteForChange.getChas()
+            );
+            String zn;
+            clearField();
+            et_data.setText(noteForChange.getData());
+            if (noteForChange.getZak().contains(rbZAP.getText().
+                                     subSequence(0,rbZAP.getText().length()))) {
+                rbZAP.setChecked(TRUE);
+                zn = noteForChange.getZak().substring(rbZAP.getText().length());}
+            else {
+                rbZN.setChecked(TRUE);
+                zn = noteForChange.getZak().substring(rbZN.getText().length());}
 
-                et_zakaz_naryad.setText(zn);
-                return FALSE;
-            }
+            et_zakaz_naryad.setText(zn);
+            et_normo_chasy.setText(format(Locale.getDefault(),"%05.2f", noteForChange.getChas()));
+
+            return FALSE;
         });
 
 // ------------------- Обработка изменения текста в заказ-наряде ----------------------------
@@ -218,7 +225,6 @@ public class MainActivity extends AppCompatActivity  {
 
 
     // сохранение файла
-//    @RequiresApi(api = Build.VERSION_CODES.O)
     public void saveText(View view) {
         // Убираю клавиатуру
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -247,7 +253,7 @@ public class MainActivity extends AppCompatActivity  {
 
             clearField();
             openText(view);
-
+            listView.expandGroup(adapter2.getGroupNom(note));
         }
 
     }
@@ -271,6 +277,7 @@ public class MainActivity extends AppCompatActivity  {
     public void clearText(View view) {
         db.deleteAllNotes();
         clearField();
+        openText(view);
     }
 
     // очистка полей ввода
@@ -287,6 +294,7 @@ public class MainActivity extends AppCompatActivity  {
     private int check_len_zn(RadioButton rb) {
         if (rb.isChecked()) {
             String str = rb.getText().toString();
+            et_normo_chasy.setText(prefix.get(str));
             return str.length() - (str.indexOf('-') + 1);
         }
         return 0;
@@ -306,11 +314,6 @@ public class MainActivity extends AppCompatActivity  {
     String[] summa_chasov;
     double int_chasy = 0.0;
 
-        if (!check_text_zn(et_zakaz_naryad.getText())) {
-            focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
-            return FALSE;
-        }
-
     chasy= format("%s%s", tv_raboty.getText().toString(), et_normo_chasy.getText().toString());
     chasy = chasy.replaceAll(",", ".");
     summa_chasov= chasy.split(" "); // делю строку любыми символами кроме цифр
@@ -318,6 +321,7 @@ public class MainActivity extends AppCompatActivity  {
     for (String s : summa_chasov)
         if (s.contains("."))
             int_chasy += Double.parseDouble(s);
+
 
     if (int_chasy == 0.0) {
         focus_keyboard(et_normo_chasy, "Введи часы за работу");
@@ -331,6 +335,12 @@ public class MainActivity extends AppCompatActivity  {
         tv_raboty.setText(s);
         return FALSE;
     }
+
+    if (!check_text_zn(et_zakaz_naryad.getText())) {
+         focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
+         return FALSE;
+    }
+
     Toast.makeText(this, "Запись сохранена", Toast.LENGTH_SHORT).show();
     tv_raboty.setText(Double.toString(int_chasy));
     return TRUE;

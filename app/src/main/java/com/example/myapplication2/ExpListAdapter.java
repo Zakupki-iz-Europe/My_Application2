@@ -22,7 +22,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
     private final ArrayList<String> mDays;
     private final Context mContext;
     private final String LOG_TAG = "List";
-    public Note noteForChange = new Note();
     public ExpListAdapter (Context context, DatabaseHelper db){
         mContext = context;
         mDays = db.distinct(Note.COLUMN_DATE);
@@ -33,7 +32,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.getDefault());
             Collections.sort(mDays, (s1, s2) -> LocalDate.parse(s1, formatter).
                     compareTo(LocalDate.parse(s2, formatter)));
-.getDateStr()
 
 */
 //            сортировка
@@ -69,6 +67,17 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
         return mDays.size();
     }
 
+
+    public int getGroupNom(Note note) {
+        String day = note.getData();
+        for (int i = 0; i < mDays.size(); i++) {
+            Log.d(LOG_TAG, mDays.get(i) + "-------" + day + "----------" + i );
+
+            if (mDays.get(i).trim().equals(day.trim())) return i;
+        }
+        return 0;
+    }
+
     @Override
     public int getChildrenCount(int groupPosition) {
         return mGroups.get(groupPosition).size();
@@ -81,8 +90,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Note getChild(int groupPosition, int childPosition) {
-//        Log.d(LOG_TAG, mGroups + "-------" + groupPosition + "------" + childPosition );
-
         return mGroups.get(groupPosition).get(childPosition);
     }
 
