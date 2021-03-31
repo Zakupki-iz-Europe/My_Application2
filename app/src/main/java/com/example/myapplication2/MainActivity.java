@@ -1,225 +1,283 @@
 package com.example.myapplication2;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Build;
+import android.os.Bundle;
+import android.widget.ExpandableListView;
 import android.app.DatePickerDialog;
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Bundle;
-import android.database.sqlite.SQLiteOpenHelper;
-
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.method.DigitsKeyListener;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.myapplication2.sqlite.DatabaseHelper;
 import com.example.myapplication2.sqlite.Note;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 
 
-public class MainActivity extends AppCompatActivity {
-//https://github.com/ravi8x/AndroidSQLite.git
-    private final static String FILE_NAME = "content.txt";
-    int len_zakaz_naryad = 5;
+public class MainActivity extends AppCompatActivity  {
+
+//    -------------------------начало списка1------------------
+    //https://github.com/ravi8x/AndroidSQLite.git
+    //----------------------------------конец списка1-------------------
+
+    private final static String NULLS = "00,00";
+    private final static String VSEGO_CHASOV = "Всего часов: ";
+    private final static Double MAX_CHASOV = 99.99;
+    private final Map<String, String> prefix = new HashMap<>();
+    static int YES = 1;
+    static int LEN_ZAKAZ_NAR = 7;
+    int len_zakaz_naryad;
     char razdelitel = ',';
     final String LOG_TAG = "myLogs";
     public DatabaseHelper db;
-
-    RadioButton rbZN, rbZNPP;
-    EditText et_zakaz_naryad,
-            et_normo_chasy;
-    TextView tv_open_text,
-            et_data,
-            tv_header,
-            tv_raboty;
-    String Value;
+    boolean isNoteChanged = FALSE,
+            YesOrNo = FALSE;
+    Note noteForChange = new Note();
     Calendar dateAndTime = Calendar.getInstance();
-
-    class DBHelper extends SQLiteOpenHelper {
-
-        public DBHelper(Context context) {
-            // конструктор суперкласса
-            super(context, "myDB", null, 1);
-        }
-
+    ColorStateList oldColors;
+    ExpListAdapter adapter2;
+    RadioButton rbZN, rbZAP;
+    EditText et_zakaz_naryad ,
+            et_normo_chasy ;
+    TextView et_data,
+            tv_raboty,
+            tv_header;
+    ExpandableListView listView ;
+    DialogInterface.OnClickListener resp = new DialogInterface.OnClickListener() {
         @Override
-        public void onCreate(SQLiteDatabase db) {
-            Log.d(LOG_TAG, "--- onCreate database ---");
-            // создаем таблицу с полями
-            db.execSQL("create table mytable ("
-                    + "id integer primary key autoincrement,"
-                    + "Дата text, "
-                    + "Заказ_наряд text, "
-                    + "Часы long" + ");");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        public void onClick(DialogInterface dialog, int which) {
 
         }
     }
 
+    //    -------------- Удаление по тапу одной работы из строки ВСЕГО ЧАСОВ ---------
+    public void delText(View view) {
+        String str = tv_raboty.getText().toString();
+        String endStr = str;
+        if (str.indexOf(razdelitel) > 0)  endStr = str.substring(0,str.lastIndexOf(razdelitel) - 2);
+        tv_raboty.setText(endStr);
+    }
+
+//  ----------------- Основная программа---------------------------------------------
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        dbHelper = new DBHelper(this);
-//        db = dbHelper.getWritableDatabase();
-        db = new DatabaseHelper(this);
-
+        rbZN = findViewById(R.id.radioButton);
+        rbZAP = findViewById(R.id.radioButton2);
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
         et_normo_chasy = findViewById(R.id.normochasy);
         et_data = findViewById(R.id.currentDateTime);
-        rbZN = findViewById(R.id.radioButton);
-        rbZNPP = findViewById(R.id.radioButton2);
-        tv_open_text = (TextView) findViewById(R.id.open_text);
-        tv_header = (TextView) findViewById(R.id.header);
-        tv_raboty = (TextView) findViewById(R.id.tv_chasy);
+        tv_header = findViewById(R.id.header);
+        tv_raboty = findViewById(R.id.tv_chasy);
+        listView = findViewById(R.id.exListView);
+        db = new DatabaseHelper(this);
+        prefix.put(getString(R.string._36), NULLS);
+        prefix.put(getString(R.string._116), "00,30");
+
+
+//        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
         clearField();
         openText(et_data);
+        ColorStateList oldColors_background =  rbZN.getLinkTextColors();
+        oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
+        findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
 
-        et_zakaz_naryad.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+        // ---------------Отработка нажатий по списку ------------------------------------
+        listView.setOnChildClickListener((ExpandableListView.OnChildClickListener)
+                this::onChildClick);
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.length() < len_zakaz_naryad) et_zakaz_naryad.setTextColor(Color.RED);
-                else {
-                    et_zakaz_naryad.setTextColor(Color.WHITE);
-                    et_normo_chasy.requestFocus();
-                    if (s.length() > len_zakaz_naryad)
-                        s.delete(len_zakaz_naryad, s.length());
+        // ---------------Отработка долгого нажатия по списку ------------------------------------
+        listView.setOnItemLongClickListener((adapterView, view, position, id) -> {
+            int childPosition, groupPosition;
+            Note noteForDel;
+            if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                if (ConfirmDelete("Удалить заказ?")) {
+                    groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                    childPosition = ExpandableListView.getPackedPositionChild(id);
+                    noteForDel = adapter2.getChild(groupPosition, childPosition);
+                    db.deleteNote(noteForDel);
+                    clearField();
+                    openText(view);
+                    return true;
                 }
             }
+            if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+              if (ConfirmDelete("Удалить ВСЕ заказы этого дня?")) {
+                groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                  DialogInterface.OnClickListener resp = (dialog, which) -> {
+                      Log.d("ConfirmDialog", dialog + "-------" + which );
+                      if (which == YES)  for (Note note  : (ArrayList<Note>) adapter2.getGroup(groupPosition)) {
+                          db.deleteNote(note);
+                      }
+                      clearField();
+                      openText(view);
+
+                  };
+
+              }
+            }
+            return false;
         });
-//        et_normo_chasy.setKeyListener(DigitsKeyListener.getInstance(false,true));
-//        et_normo_chasy.setFilters(new InputFilter[] {new DecimalDigitsInputFilter(5,2)});
-        et_normo_chasy.addTextChangedListener(new MyWatcher());
+        // ---------------Отработка долгого нажатия по заголовку ------------------------------------
+//        tv_header.setOnLongClickListener((adapterView, view, position, id) -> {
+//
+//            if (ConfirmDelete("Удалить ВСЕ заказы за месяц?")) {
+//                for (Note note  : (ArrayList<Note>) adapter2.getGroup(groupPosition)) {
+//                    db.deleteNote(note);
+//                }
+//                clearField();
+//                openText(tv_header);
+//                return true;
+//              }
+//
+//            return false;
+ // });
+
+// ------------------- Обработка изменения текста в заказ-наряде ----------------------------
+   et_zakaz_naryad.addTextChangedListener(et_zn_watcher);
+// ------------------------- Обработка изменения часов ---------------------------------------
+   et_normo_chasy.addTextChangedListener(new MyWatcher());
     }
 
-    public class MyWatcher implements TextWatcher {
-        // замена любого символа в часах на плюсик и запрет на двойной символ
-// https://ru.stackoverflow.com/questions/554110/%D0%9A%D0%B0%D0%BA-%D0%B2-edittext-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D0%B8%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D1%8F%D0%B4%D1%8B/554280#554280
-        private static final char ad = '+';
-
+    TextWatcher et_zn_watcher =  new TextWatcher() {
         @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
-
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
-
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
         @Override
         public void afterTextChanged(Editable s) {
-            char c = s.charAt(s.length() - 1);
-            int len = s.length();
-            switch(len) {
-                case 1:
-                    if ((c == '.')||(c == '0')) s.replace(0,len-1,"00.00");
-                            else s.insert(0,"00.0");
-                    break;
-                case 6:
-                    s.delete(2,3);
-                    s.insert(3,".");
-                    if (s.charAt(0) == '0') s.delete(0,1);
-                        else addJob(et_normo_chasy);
-                    break;
-                default:
-                    Toast.makeText(getApplicationContext(), "Что-то пошло не так", Toast.LENGTH_SHORT).show();
-                      break;
-            }
-            //            char c = s.charAt(s.length() - 1);
-//                if (!Character.isDigit(c)) {
-//                    if (s.length() == 1) {
-//                        s.delete(s.length() - 1, s.length());
-//                        Toast.makeText(getApplicationContext(), "Цифры нужны", Toast.LENGTH_SHORT).show();
-//                    }
-//                    else {
-//                        c = s.charAt(s.length() - 2);
-//                        if (!Character.isDigit(c)) {
-//                            s.delete(s.length() - 1, s.length());
-//                            Toast.makeText(getApplicationContext(), "Только один разделитель", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//
-//
-//            }
-//if (s.length() > 4) addJob(et_normo_chasy);
+            check_text_zn(s);
         }
+    };
+
+    public boolean check_text_zn(Editable s) {
+        len_zakaz_naryad = set_len_zn();
+        if (s.length() < len_zakaz_naryad) {
+            et_zakaz_naryad.setTextColor(Color.RED);
+            return FALSE;
+        }
+        else {
+            et_zakaz_naryad.setTextColor(oldColors);
+            et_normo_chasy.requestFocus();
+            et_normo_chasy.setSelection(et_normo_chasy.getText().length());
+            if (s.length() > len_zakaz_naryad)
+                s.delete(len_zakaz_naryad, s.length());
+        }
+        return TRUE;
     }
 
-    public class DecimalDigitsInputFilter implements InputFilter {
-
-        Pattern mPattern;
-
-        public DecimalDigitsInputFilter(int digitsBeforeZero,int digitsAfterZero) {
-            mPattern= Pattern.compile("[0-9]{0," + (digitsBeforeZero-1) + "}+((\\.[0-9]{0," + (digitsAfterZero-1) + "})?)||(\\.)?");
+    private boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        listView = parent;
+        isNoteChanged = TRUE;
+        noteForChange = adapter2.getChild(groupPosition, childPosition);
+        Log.d("onChildClick",
+                "id = " + noteForChange.getId() +
+                        ", Дата = " + noteForChange.getData() +
+                        ", Заказ_наряд = " + noteForChange.getZak() +
+                        ", Часы = " + noteForChange.getChas()
+        );
+        clearField();
+        et_data.setText(noteForChange.getData());
+        String zn;
+        if (noteForChange.getZak().contains(rbZAP.getText().
+                subSequence(0, rbZAP.getText().length()))) {
+            rbZAP.setChecked(TRUE);
+            zn = noteForChange.getZak().substring(rbZAP.getText().length());
+        } else {
+            rbZN.setChecked(TRUE);
+            zn = noteForChange.getZak().substring(rbZN.getText().length());
         }
 
+        et_zakaz_naryad.setText(zn);
+        et_normo_chasy.setText(format(Locale.getDefault(), "%05.2f", noteForChange.getChas()));
+
+        return FALSE;
+    }
+
+
+    public class MyWatcher implements TextWatcher {
         @Override
-        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override
+        public void afterTextChanged(Editable s) {
+            int len = s.length();
+            if (len > 0) {
+                if (len != 5) {
+                    StringBuilder strBuff = new StringBuilder();
+                    char c;
+                    double chas;
+                    String strng; // Выбрасываю все знаки из строки - хотя их нельзя ввести, но можно вставить
+                    for (int i = 0; i < len; i++) {
+                        c = et_normo_chasy.getText().toString().charAt(i);
+                        if (Character.isDigit(c)) {
+                            strBuff.append(c);
+                        }
+                    }
 
-            Matcher matcher=mPattern.matcher(dest);
-            if(!matcher.matches())
-                return "";
-            return null;
+                    int strLen = strBuff.length();
+                    strng = strBuff.toString();
+                        if (strLen > 4) strng = strBuff.substring(strLen - 4);
+                    chas = Double.parseDouble(strng);
+                    chas = chas/100;
+                    DecimalFormat formater = new DecimalFormat("00.00");
+                        if (chas==0) strng = NULLS; else strng = formater.format(chas);
+                    s.replace(0,s.length(),strng);
+                }
+                else if (s.charAt(0) != '0') addJob(et_normo_chasy);
+
+            }
         }
-
     }
 
+    // ------------------------------ Кнопка добавить работу в строку ВСЕГО РАБОТ-------
     public void addJob(View view) {
         String raboty = tv_raboty.getText().toString();
         String chasyki = et_normo_chasy.getText().toString();
-        if (chasyki.length() > 2) {
+        if (!chasyki.equals(NULLS)) {
             String firstJob = raboty + chasyki;
-            et_normo_chasy.setText("");
-            firstJob = firstJob + " + ";
+            et_normo_chasy.setText(NULLS);
+            et_normo_chasy.setSelection(NULLS.length());
+            firstJob += " + ";
             tv_raboty.setText(firstJob);
         }
-   }
+    }
 
 
     // сохранение файла
@@ -229,158 +287,127 @@ public class MainActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         Note note = new Note();
-        FileOutputStream fos = null;
 
         if (check_field()) {
-            try {
-                note.setData(et_data.getText().toString());
+            note.setData(et_data.getText().toString());
 
-                String text = note.getData() + razdelitel;
+            if (rbZN.isChecked())
+                note.setZak(rbZN.getText().toString());
+            else note.setZak(rbZAP.getText().toString());
 
-                if (rbZN.isChecked())
-                    note.setZak(rbZN.getText().toString());
-                else  note.setZak(rbZNPP.getText().toString());
-                note.setZak(note.getZak() +  et_zakaz_naryad.getText().toString());
+            note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
 
-                text = text + note.getZak() + razdelitel;
+            note.setChas(Double.parseDouble(tv_raboty.getText().toString().replace(",", ".")));
 
-                long int_chasy = 0;
-                String chasy = tv_raboty.getText().toString() + et_normo_chasy.getText().toString();
-                Log.d(LOG_TAG, chasy);
-                String[] summa_chasov = chasy.split("\\D"); // делю строку любыми символами кроме цифр
-                for (int i = 0; i < summa_chasov.length; i++) {
-                    if (summa_chasov[i].length() > 3) int_chasy += Long.parseLong(summa_chasov[i]);
-                }
-                note.setChas(int_chasy / 100);
+            if (isNoteChanged) {
+               note.setId(noteForChange.getId());
+               db.updateNote(note);
+               isNoteChanged = FALSE;
+               noteForChange = null;
+           }
+                else db.insertNote(note);
 
-                text = text + note.getChas() + "н/ч\r\n";
-                db.insertNote(note);
-
-                fos = openFileOutput(FILE_NAME, MODE_APPEND);
-                fos.write(text.getBytes());
-                Toast.makeText(this, "Файл сохранен", Toast.LENGTH_SHORT).show();
-                clearField();
-                openText(view);
-
-            } catch (IOException ex) {
-
-                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            } finally {
-                try {
-                    if (fos != null) fos.close();
-                } catch (IOException ex) {
-
-                    Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
+            clearField();
+            openText(view);
+            listView.expandGroup(adapter2.getGroupNom(note));
         }
 
     }
 
     // открытие файла
     public void openText(View view) {
-        FileInputStream fin = null;
-        try {
-            List<Note> notes = db.getAllNotes();
-            for (int i=0; i<db.getNotesCount();i++){
-                Log.d(LOG_TAG,
-                        "id = " + notes.get(i).getId() +
-                             ", Дата = " + notes.get(i).getData() +
-                             ", Заказ_наряд = " + notes.get(i).getZak() +
-                             ", Часы = " + notes.get(i).getChas()
-                );
-           }
-            fin = openFileInput(FILE_NAME);
-            byte[] bytes = new byte[fin.available()];
-            fin.read(bytes);
-            String text = new String(bytes);
-            tv_open_text.setText(text);
-        } catch (IOException ex) {
-
-            Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-        } finally {
-
-            try {
-                if (fin != null)
-                    fin.close();
-            } catch (IOException ex) {
-
-                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+      adapter2 = new ExpListAdapter(getApplicationContext(), db); //.getReadableDatabase());
+        listView.setAdapter(adapter2);
+        List<Note> notes = db.getAllNotes();
+        for (int i = 0; i < db.getNotesCount(); i++) {
+            Log.d(LOG_TAG,
+                    "id = " + notes.get(i).getId() +
+                            ", Дата = " + notes.get(i).getData() +
+                            ", Заказ_наряд = " + notes.get(i).getZak() +
+                            ", Часы = " + notes.get(i).getChas()
+            );
         }
     }
 
-    // удаление файла
+//------------------ Удаление файла ---------------------
     public void clearText(View view) {
-
-        FileInputStream fin = null;
-        try {
-            Log.d(LOG_TAG, "--- Clear mytable: ---");
-            deleteFile(FILE_NAME);
-            tv_open_text.setText(null);
-            db.deleteAllNotes();
-            clearField();
-        } finally {
-
-            try {
-                if (fin != null) {
-                    fin.close();
-                }
-            } catch (IOException ex) {
-
-                Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
+        db.deleteAllNotes();
+        clearField();
+        openText(view);
     }
 
     // очистка полей ввода
     public void clearField() {
         et_zakaz_naryad.setText("");
         et_zakaz_naryad.requestFocus();
-        et_normo_chasy.setText("");
-        tv_raboty.setText("");
+        et_normo_chasy.setText(NULLS);
+        tv_raboty.setText(VSEGO_CHASOV);
         rbZN.setChecked(TRUE);
-        len_zakaz_naryad = 5;
         Date currentDate = new Date();
         data_set(currentDate);
     }
 
-    public void set_short_len(View view) {
-        len_zakaz_naryad = 4;
-        Value = et_zakaz_naryad.getText().toString();
-        if (Value.length() > len_zakaz_naryad)
-            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
-// если уже набрали больше символов, то оставляем по длине
+    private int check_len_zn(RadioButton rb) {
+        if (rb.isChecked()) {
+            String str = rb.getText().toString();
+            et_normo_chasy.setText(prefix.get(str));
+            return str.length() - (str.indexOf('-') + 1);
+        }
+        return 0;
     }
 
-    public void set_long_len(View view) {
-        len_zakaz_naryad = 5;
+    public int set_len_zn() {
+        return LEN_ZAKAZ_NAR - check_len_zn(rbZAP) - check_len_zn(rbZN);
+    }
+
+    public void set_short_len(View view) {
+        check_text_zn(et_zakaz_naryad.getText());
     }
 
     // проверка, что поля не пустые
-    public boolean check_field() {
-        Value = et_zakaz_naryad.getText().toString();
-        if (Value.length() > len_zakaz_naryad)
-            et_zakaz_naryad.setText(Value.substring(0, len_zakaz_naryad));
-        else if (Value.length() < len_zakaz_naryad) {
-            focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
-            return FALSE;
-        }
+   public boolean check_field() {
+    String chasy;
+    String[] summa_chasov;
+    double int_chasy = 0.0;
 
-        Value = et_normo_chasy.getText().toString() + tv_raboty.getText().toString();
-        if (Value.length() < 2) {
-            focus_keyboard(et_normo_chasy, "Введи часы за работу");
-            return FALSE;
-        }
+    chasy= format("%s%s", tv_raboty.getText().toString(), et_normo_chasy.getText().toString());
+    chasy = chasy.replaceAll(",", ".");
+    summa_chasov= chasy.split(" "); // делю строку любыми символами кроме цифр
 
-        return TRUE;
+    for (String s : summa_chasov)
+        if (s.contains("."))
+            int_chasy += Double.parseDouble(s);
+
+
+    if (int_chasy == 0.0) {
+        focus_keyboard(et_normo_chasy, "Введи часы за работу");
+        return FALSE;
     }
+
+    if (int_chasy > MAX_CHASOV) {
+        int_chasy -= MAX_CHASOV;
+        focus_keyboard(et_normo_chasy, "Братан, это круто, но в одном заказе не больше " + MAX_CHASOV + " часов");
+        String s = VSEGO_CHASOV + String.format(Locale.getDefault(),"%05.2f",int_chasy) + " + ";
+        tv_raboty.setText(s);
+        return FALSE;
+    }
+
+    if (!check_text_zn(et_zakaz_naryad.getText())) {
+         focus_keyboard(et_zakaz_naryad, " Введи номер заказ-наряда");
+         return FALSE;
+    }
+
+    Toast.makeText(this, "Запись сохранена", Toast.LENGTH_SHORT).show();
+    tv_raboty.setText(Double.toString(int_chasy));
+    return TRUE;
+   }
 
     public void focus_keyboard(EditText editText, String str) {
         editText.requestFocus();
+        editText.setSelection(editText.getText().length());
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, str, Toast.LENGTH_LONG).show();
     }
 
 
@@ -394,72 +421,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // установка обработчика выбора даты
-    DatePickerDialog.OnDateSetListener d = new DatePickerDialog.OnDateSetListener() {
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            dateAndTime.set(Calendar.YEAR, year);
-            dateAndTime.set(Calendar.MONTH, monthOfYear);
-            dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            data_set(dateAndTime.getTime());
-        }
+    DatePickerDialog.OnDateSetListener d = (view, year, monthOfYear, dayOfMonth) -> {
+        dateAndTime.set(Calendar.YEAR, year);
+        dateAndTime.set(Calendar.MONTH, monthOfYear);
+        dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        data_set(dateAndTime.getTime());
     };
 
+    @SuppressLint("SimpleDateFormat")
     public void data_set(Date date) {
         //         Форматирование времени как "день.месяц.год"
         DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
         String dateText = dateFormat.format(date);
         et_data.setText(dateText);
+         dateFormat = new SimpleDateFormat("LLLL yyyy ");
+        String month = dateFormat.format(date);
         Objects.requireNonNull(getSupportActionBar()).hide();
-//        Spannable text_dateText = new SpannableString(dateText + " ");
-//        Spannable text = new SpannableString("На " + text_dateText + text + "н/ч");
-        String summa_chasov = file_read();
-        Spannable text = new SpannableString("На " + dateText + " " + summa_chasov + "н/ч ");
-//        text.setSpan(new StyleSpan(Typeface.ITALIC), 0, 18,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        text.setSpan(new ForegroundColorSpan(Color.GREEN), 0, text.length()-1,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        text.setSpan(getResources().getColor(R.color.teal_200), 3, 14,  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.purple_200)), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        text.setSpan(new StyleSpan(Typeface.BOLD), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-//        String str = "На " + text_dateText + text + "н/ч";
-//        Spannable str; // = new SpannableString('');
-//        str = (Spannable) TextUtils.concat( text_dateText.toString(), text.toString());
+        month = month.substring(0,1).toUpperCase() + month.substring(1).toLowerCase();
+        month +=  " - ";
+        String summa_chasov =  file_read(date);
+        Spannable text = new SpannableString( month + summa_chasov + "н/ч ");
+        //text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.purple_200)), 14, 14 + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new StyleSpan(Typeface.BOLD), month.length(), month.length() + summa_chasov.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         tv_header.setText(text);
 
     }
 
-    ;
+
 
     // построчное считывание файла
-    public String file_read() {
-        double chasy = 0;
-        int begin_of_nch, end_of_nch;
-        String line, hours;
-        try {
-            FileInputStream is = openFileInput(FILE_NAME);
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-
-            while ((line = br.readLine()) != null) {
-                if (!line.isEmpty()) {
-                    begin_of_nch = line.lastIndexOf(razdelitel) + 1;
-                    end_of_nch = line.length() - 3;
-                    hours = line.substring(begin_of_nch, end_of_nch);
-                    chasy += Double.parseDouble(hours);
-                }
-            }
-            chasy = Math.round(chasy * 100);
-            // clean up
-            br.close();
-            isr.close();
-            is.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+    @SuppressLint("DefaultLocale")
+    public String file_read(Date date) {
+    double sumChas = 0.0;
+        for (Note chas : db.getAllNotes() ) {
+        @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
+         try {
+             Date dateZak = df.parse(chas.getData());
+             if (date != null) {
+                 if (dateZak == null) throw new AssertionError();
+                 if (dateZak.getYear() == date.getYear())
+                     if (dateZak.getMonth() == date.getMonth()) {
+                         sumChas += chas.getChas();
+                     }
+             } else {
+                 throw new AssertionError();
+             }
+         } catch (ParseException pe) {
+                    // не получилось
+                    Log.d(LOG_TAG, chas.getData() + "-------" + pe );
+             }
         }
-        return Double.toString(chasy / 100);
-    }
-//https://startandroid.ru/ru/uroki/vse-uroki-spiskom/74-urok-34-hranenie-dannyh-sqlite.html
 
-    // получаем данные из полей ввода
+        return format("%.2f",sumChas);
+
+    }
+    public void ConfirmDelete(String message){
+        YesOrNo = FALSE;
+        AlertDialog.Builder alertDialogBuilder;
+        alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(message);
+
+        //            Я не понимаю, почему если в процедуре обработке нажатия клавиши локальной переменной
+//              присвоить значение, то потом я не могу вернуть это значение как ответ функции
+//        DialogInterface.OnClickListener resp = (dialog, which) -> {
+//                        Log.d("ConfirmDialog", dialog + "-------" + which );
+//                        if (which == YES)  YesOrNo = TRUE;
+//                    };
+
+        alertDialogBuilder.setPositiveButton("Да", resp);
+        alertDialogBuilder.setNegativeButton("Нет",resp);
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+//    return alertDialogBuilder.DialogInterface;
+    }
 }
