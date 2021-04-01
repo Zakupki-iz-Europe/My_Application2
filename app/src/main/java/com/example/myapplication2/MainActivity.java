@@ -1,11 +1,14 @@
 package com.example.myapplication2;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.annotation.RequiresApi;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.AdapterView;
@@ -50,7 +53,8 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity
+        implements YesNoDialogFragment.YesNoDialogFragmentListener {
 
 //    -------------------------начало списка1------------------
     //https://github.com/ravi8x/AndroidSQLite.git
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity  {
             tv_header,
             tv_raboty;
     ExpandableListView listView ;
+    FragmentManager fragmentManager = this.getSupportFragmentManager();
 
 
 //    -------------- Удаление по тапу одной работы из строки ВСЕГО ЧАСОВ ---------
@@ -151,8 +156,17 @@ public class MainActivity extends AppCompatActivity  {
 
 
                    Log.d("activity","group: "+groupPosition +" child:"+childPosition);
+                    // Create YesNoDialogFragment
+                    DialogFragment dialogFragment = new YesNoDialogFragment();
 
+                    // Arguments:
+                    Bundle args = new Bundle();
+                    args.putString(YesNoDialogFragment.ARG_TITLE, "Confirmation");
+                    args.putString(YesNoDialogFragment.ARG_MESSAGE, "Do you like this example?");
+                    dialogFragment.setArguments(args);
 
+                    // Show:
+                    dialogFragment.show(fragmentManager, "Dialog");
 
                     // Return true as we are handling the event.
                     return true;
@@ -227,6 +241,28 @@ public class MainActivity extends AppCompatActivity  {
         }
         return TRUE;
     }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        if (fragment instanceof YesNoDialogFragment) {
+            YesNoDialogFragment yesNoDialogFragment = (YesNoDialogFragment) fragment;
+            yesNoDialogFragment.setOnYesNoDialogFragmentListener(this);
+        }
+    }
+
+    // Implement method of YesNoDialogFragment.YesNoDialogFragmentListener
+    @Override
+    public void onYesNoResultDialog(int resultCode, @Nullable Intent data) {
+        if(resultCode == Activity.RESULT_OK) {
+            String value1 = data.getStringExtra("key1"); // ...
+            this.tv_header.setText("You select YES");
+        } else if(resultCode == Activity.RESULT_CANCELED) {
+            this.tv_header.setText("You select NO");
+        } else {
+            this.tv_header.setText("You don't select");
+        }
+    }
+
 
 
     public class MyWatcher implements TextWatcher {
