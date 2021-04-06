@@ -20,9 +20,9 @@ public class YesNoDialogFragment extends DialogFragment {
         /**
          *
          * @param resultCode - Activity.RESULT_OK, Activity.RESULT_CANCEL
-         * @param data
+         *
          */
-        public void onYesNoResultDialog(int resultCode, @Nullable Intent data);
+        public void onYesNoResultDialog(int resultCode);
     }
 
     public YesNoDialogFragment() {
@@ -36,19 +36,24 @@ public class YesNoDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle args = getArguments();
-        String title = args.getString(ARG_TITLE);
+        String title = "Удаление";
         String message = args.getString(ARG_MESSAGE);
+//      Вообще интересный метод передавать сразу несколько значений
+//    public Dialog onCreateDialog(Bundle savedInstanceState) {
+//        Bundle args = getArguments();
+//        String title = args.getString(ARG_TITLE);
+//        String message = args.getString(ARG_MESSAGE);
 
         return new AlertDialog.Builder(getActivity())
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton("ДА", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         buttonOkClick();
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton("НЕТ", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         buttonNoClick();
@@ -59,7 +64,7 @@ public class YesNoDialogFragment extends DialogFragment {
 
     private void buttonOkClick() {
         int resultCode = Activity.RESULT_OK;
-
+//          тоже может пригодиться для передачи нескольких данных
         Bundle bundle = new Bundle();
         bundle.putString("key1", "Value 1");
         bundle.putString("key2", "Value 2");
@@ -67,7 +72,7 @@ public class YesNoDialogFragment extends DialogFragment {
 
         // Open this DialogFragment from an Activity.
         if(this.listener != null)  {
-            this.listener.onYesNoResultDialog(Activity.RESULT_OK, data);
+            this.listener.onYesNoResultDialog(Activity.RESULT_OK);
         }
         // Open this DialogFragment from another Fragment.
         else {
@@ -83,7 +88,7 @@ public class YesNoDialogFragment extends DialogFragment {
 
         // Open this DialogFragment from an Activity.
         if(this.listener != null)  {
-            this.listener.onYesNoResultDialog(resultCode, data);
+            this.listener.onYesNoResultDialog(resultCode);
         }
         // Open this DialogFragment from another Fragment.
         else {

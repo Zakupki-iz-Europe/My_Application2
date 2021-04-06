@@ -37,6 +37,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity
     public DatabaseHelper db;
     boolean isNoteChanged = FALSE;
     Note noteForChange = new Note();
+    ArrayList<Note> notesForDel = new ArrayList<Note>();
     Calendar dateAndTime = Calendar.getInstance();
     ColorStateList oldColors;
     ExpListAdapter adapter2;
@@ -153,61 +155,41 @@ public class MainActivity extends AppCompatActivity
                 if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
                     int groupPosition = ExpandableListView.getPackedPositionGroup(id);
                     int childPosition = ExpandableListView.getPackedPositionChild(id);
-
-
-                   Log.d("activity","group: "+groupPosition +" child:"+childPosition);
                     // Create YesNoDialogFragment
                     DialogFragment dialogFragment = new YesNoDialogFragment();
-
                     // Arguments:
                     Bundle args = new Bundle();
-                    args.putString(YesNoDialogFragment.ARG_TITLE, "Confirmation");
-                    args.putString(YesNoDialogFragment.ARG_MESSAGE, "Do you like this example?");
+                    args.putString(YesNoDialogFragment.ARG_MESSAGE, "Удалить этот заказ?");
                     dialogFragment.setArguments(args);
-
+                    notesForDel.add(adapter2.getChild(groupPosition,childPosition));
                     // Show:
                     dialogFragment.show(fragmentManager, "Dialog");
+                    return true;
+                }
+               if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+                    int groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                    // Create YesNoDialogFragment
+                    DialogFragment dialogFragment = new YesNoDialogFragment();
+                    // Arguments:
+                    Bundle args = new Bundle();
+                    args.putString(YesNoDialogFragment.ARG_MESSAGE, "Удалить заказы этого дня?");
+                    dialogFragment.setArguments(args);
+                   int child = 0;
+                   Log.d(LOG_TAG, adapter2.getChildrenCount(groupPosition) + "+++++++++++"  );
 
-                    // Return true as we are handling the event.
+                   while (child < adapter2.getChildrenCount(groupPosition)) {
+                       Log.d(LOG_TAG, child + "-------"  );
+
+                       notesForDel.add(adapter2.getChild(groupPosition,child));
+                       child++;
+                   }
+                   // Show:
+                    dialogFragment.show(fragmentManager, "Dialog");
                     return true;
                 }
                 return false;
             }
         });
-//        .setOnItemLongClickListener((ExpandableListView.OnItemLongClickListener)
-//                (parent,
-//                 v,
-//                 groupPosition,
-//                 childPosition) -> {
-////                    noteForChange = (Note) adapter2.getChild(groupPosition, (int) childPosition);
-//                    Log.d("Listener",
-//                            "id = " + childPosition +
-//                                    ", groupPosition = " + groupPosition );
-//
-//                    Log.d("Deleting note",
-//                            "id = " + noteForChange.getId() +
-//                                    ", Дата = " + noteForChange.getData() +
-//                                    ", Заказ_наряд = " + noteForChange.getZak() +
-//                                    ", Часы = " + noteForChange.getChas()
-//                    );
-//                    String zn;
-//                    clearField();
-//                    et_data.setText(noteForChange.getData());
-//                    if (noteForChange.getZak().contains(rbZAP.getText().
-//                            subSequence(0,rbZAP.getText().length()))) {
-//                        rbZAP.setChecked(TRUE);
-//                        zn = noteForChange.getZak().substring(rbZAP.getText().length());}
-//                    else {
-//                        rbZN.setChecked(TRUE);
-//                        zn = noteForChange.getZak().substring(rbZN.getText().length());}
-//
-//                    et_zakaz_naryad.setText(zn);
-////                    et_normo_chasy.setText(format(Locale.getDefault(),"%05.2f", noteForChange.getChas()));
-//
-//                    return FALSE;
-//                });
-
-
 
 // ------------------- Обработка изменения текста в заказ-наряде ----------------------------
    et_zakaz_naryad.addTextChangedListener(et_zn_watcher);
@@ -252,13 +234,21 @@ public class MainActivity extends AppCompatActivity
 
     // Implement method of YesNoDialogFragment.YesNoDialogFragmentListener
     @Override
-    public void onYesNoResultDialog(int resultCode, @Nullable Intent data) {
+    public void onYesNoResultDialog(int resultCode) {
         if(resultCode == Activity.RESULT_OK) {
-            String value1 = data.getStringExtra("key1"); // ...
-            this.tv_header.setText("You select YES");
-        } else if(resultCode == Activity.RESULT_CANCELED) {
-            this.tv_header.setText("You select NO");
+            int counter = 0;
+             if (notesForDel!=null) {
+                 for (Note note: notesForDel) {
+                db.deleteNote(note);
+                counter++;}
+            }
+//             counter--;
+            Toast.makeText(this, "Удалено записей: " + counter, Toast.LENGTH_SHORT).show();
+            notesForDel.clear();
+            openText(et_zakaz_naryad);
+            data_set(dateAndTime.getTime());
         } else {
+            notesForDel.clear();
             this.tv_header.setText("You don't select");
         }
     }
