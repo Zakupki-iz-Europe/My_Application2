@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity
     Calendar dateAndTime = Calendar.getInstance();
     ColorStateList oldColors;
     ExpListAdapter adapter2;
-    RadioButton rbZN, rbZAP;
+    RadioButton rbZN, rbZAP, rbZDOP;
     EditText et_zakaz_naryad ,
             et_normo_chasy ;
     TextView et_data,
@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         rbZN = findViewById(R.id.radioButton);
         rbZAP = findViewById(R.id.radioButton2);
+       rbZDOP = findViewById(R.id.radioButton3);
         et_zakaz_naryad = findViewById(R.id.zakaz_naryad);
         et_normo_chasy = findViewById(R.id.normochasy);
         et_data = findViewById(R.id.currentDateTime);
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity
         db = new DatabaseHelper(this);
         prefix.put(getString(R.string._36), NULLS);
         prefix.put(getString(R.string._116), "00,30");
+        prefix.put(getString(R.string._dop), NULLS);
 
 
 //        https://maxfad.ru/programmer/android/252-sozdanie-spiska-listview-i-arrayadapter-v-android-studio.html
@@ -120,35 +122,39 @@ public class MainActivity extends AppCompatActivity
         oldColors =  et_zakaz_naryad.getTextColors(); //save original colors
         findViewById(R.id.divider).setBackgroundColor(oldColors_background.getDefaultColor());
 
-        // ---------------Отработка нажатий по списку ------------------------------------
+        // ---------------Отработка коротких нажатий по списку ------------------------------------
         listView.setOnChildClickListener((ExpandableListView.OnChildClickListener)
                 (parent, v, groupPosition, childPosition, id) -> {
-            isNoteChanged = TRUE;
-            noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
-            Log.d("onChildClick",
-                    "id = " + noteForChange.getId() +
-                            ", Дата = " + noteForChange.getData() +
-                            ", Заказ_наряд = " + noteForChange.getZak() +
-                            ", Часы = " + noteForChange.getChas()
-            );
-            String zn;
-            clearField();
-            et_data.setText(noteForChange.getData());
-            if (noteForChange.getZak().contains(rbZAP.getText().
-                                     subSequence(0,rbZAP.getText().length()))) {
-                rbZAP.setChecked(TRUE);
-                zn = noteForChange.getZak().substring(rbZAP.getText().length());}
-            else {
-                rbZN.setChecked(TRUE);
-                zn = noteForChange.getZak().substring(rbZN.getText().length());}
+                    isNoteChanged = TRUE;
+                    noteForChange = (Note) adapter2.getChild(groupPosition, childPosition);
+                    Log.d("onChildClick",
+                            "id = " + noteForChange.getId() +
+                                    ", Дата = " + noteForChange.getData() +
+                                    ", Заказ_наряд = " + noteForChange.getZak() +
+                                    ", Часы = " + noteForChange.getChas()
+                    );
+                    String zn;
+                    clearField();
+                    et_data.setText(noteForChange.getData());
+                    if (noteForChange.getZak().contains(rbZAP.getText().
+                            subSequence(0, rbZAP.getText().length()))) {
+                        rbZAP.setChecked(TRUE);
+                    }
+//                zn = noteForChange.getZak().substring(rbZAP.getText().length());}
+                    else if (noteForChange.getZak().contains(rbZDOP.getText().
+                            subSequence(0, rbZDOP.getText().length()))) {
+                        rbZDOP.setChecked(TRUE);
+                    }
+//                zn = noteForChange.getZak().substring(rbZN.getText().length());}
+                    else rbZN.setChecked(TRUE);
 
-            et_zakaz_naryad.setText(zn);
-            et_normo_chasy.setText(format(Locale.getDefault(),"%05.2f", noteForChange.getChas()));
+                    et_zakaz_naryad.setText(noteForChange.getZak());
+                    et_normo_chasy.setText(format(Locale.getDefault(), "%05.2f", noteForChange.getChas()));
 
-            return FALSE;
-        });
+                    return FALSE;
+                });
 
-        // ---------------Отработка нажатий по списку ------------------------------------
+        // ---------------Отработка долгих нажатий по списку -- удаление дня или записи ----------------------------------
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -210,6 +216,7 @@ public class MainActivity extends AppCompatActivity
 
     public boolean check_text_zn(Editable s) {
         len_zakaz_naryad = set_len_zn();
+        Log.d(LOG_TAG, "Длина зн ------   " + len_zakaz_naryad) ;
         if (s.length() < len_zakaz_naryad) {
             et_zakaz_naryad.setTextColor(Color.RED);
             return FALSE;
@@ -316,11 +323,13 @@ public class MainActivity extends AppCompatActivity
         if (check_field()) {
             note.setData(et_data.getText().toString());
 
-            if (rbZN.isChecked())
-                note.setZak(rbZN.getText().toString());
-            else note.setZak(rbZAP.getText().toString());
+//            if (rbZN.isChecked())
+//                note.setZak(rbZN.getText().toString());
+//            else note.setZak(rbZAP.getText().toString());
+//
+//            note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
 
-            note.setZak(note.getZak() + et_zakaz_naryad.getText().toString());
+            note.setZak(et_zakaz_naryad.getText().toString());
 
             note.setChas(Double.parseDouble(tv_raboty.getText().toString().replace(",", ".")));
 
@@ -363,11 +372,12 @@ public class MainActivity extends AppCompatActivity
 
     // очистка полей ввода
     public void clearField() {
-        et_zakaz_naryad.setText("");
+        rbZN.setChecked(TRUE);
+
+        et_zakaz_naryad.setText(rbZN.getText());
         et_zakaz_naryad.requestFocus();
         et_normo_chasy.setText(NULLS);
         tv_raboty.setText(VSEGO_CHASOV);
-        rbZN.setChecked(TRUE);
         Date currentDate = new Date();
         data_set(currentDate);
     }
@@ -376,17 +386,21 @@ public class MainActivity extends AppCompatActivity
         if (rb.isChecked()) {
             String str = rb.getText().toString();
             et_normo_chasy.setText(prefix.get(str));
-            return str.length() - (str.indexOf('-') + 1);
+//            et_zakaz_naryad.setText(str);
+//            return str.length() - (str.indexOf('-') + 1);
+            Log.d(LOG_TAG, " Префикс --- " + str.indexOf('-'));
+            return str.indexOf('-');
         }
         return 0;
     }
 
     public int set_len_zn() {
-        return LEN_ZAKAZ_NAR - check_len_zn(rbZAP) - check_len_zn(rbZN);
+        return LEN_ZAKAZ_NAR + check_len_zn(rbZAP) + check_len_zn(rbZN) + check_len_zn(rbZDOP);
     }
 
     public void set_short_len(View view) {
         check_text_zn(et_zakaz_naryad.getText());
+
     }
 
     // проверка, что поля не пустые

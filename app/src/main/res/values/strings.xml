@@ -8,4 +8,5 @@
     <string name="zak_nom">Номер заказ-наряда</string>
     <string name="save">Сохранить</string>
     <string name="add">Добавить</string>
+    <string name="_dop">ЗНДОП-96</string>
 </resources>

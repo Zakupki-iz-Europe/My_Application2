@@ -42,8 +42,16 @@
                         android:layout_height="wrap_content"
                         android:text="@string/_116"
                         android:textSize="16sp"
-
                         android:onClick="set_short_len"/>
+
+                    <RadioButton
+                        android:id="@+id/radioButton3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/_dop"
+                        android:textSize="16sp"
+                        android:onClick="set_short_len" />
                 </RadioGroup>
 
                 <EditText
